@@ -341,7 +341,7 @@ function add_helm_repos {
     su - $k8s_user -c "helm repo add mojaloop http://mojaloop.io/helm/repo/" > /dev/null 2>&1
     su - $k8s_user -c "helm repo add cowboysysop https://cowboysysop.github.io/charts/" > /dev/null 2>&1  # mongo-express
     su - $k8s_user -c "helm repo add redpanda-data https://charts.redpanda.com/ " > /dev/null 2>&1   # kafka console
-    su - $k8s_user -c "helm repo add g2p-sandbox https://fynarfin.io/images/ph-ee-g2psandbox-1.3.1/" > /dev/null 2>&1  #g2p-sandbox 
+    su - $k8s_user -c "helm repo add $PH_CHART_REPO_NAME $PH_HELM_REPO_LINK" > /dev/null 2>&1  #g2p-sandbox 
 
     su - $k8s_user -c "helm repo update" > /dev/null 2>&1
 }
