@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source ./src/mojafos/configurationManager/config.sh
 source ./src/mojafos/environmentSetup/environmentSetup.sh
 source ./src/mojafos/deployer/deployer.sh
 
@@ -8,7 +9,7 @@ function welcome {
   echo -e "███    ███  ██████       ██  █████  ███████  ██████  ███████ "
   echo -e "████  ████ ██    ██      ██ ██   ██ ██      ██    ██ ██      "
   echo -e "██ ████ ██ ██    ██      ██ ███████ █████   ██    ██ ███████ "
-  echo -e "██  ██  ██ ██    ██ ██   ██ ██   ██ ██      ██    ██      ██ "
+  echo -e "██  ██  ██ ██    ██ █   ██ ██   ██ ██      ██    ██      ██ "
   echo -e "██      ██  ██████   █████  ██   ██ ██       ██████  ███████ "
   echo -e "                                                              "
   echo -e "                                                              ${RESET}"

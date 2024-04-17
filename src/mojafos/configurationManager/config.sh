@@ -21,6 +21,9 @@ PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="moja-ph"
 PH_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/ph_values.yaml"
 PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
+PH_HELM_REPO_LINK="https://fynarfin.io/images/ph-ee-g2psandbox-1.5.0/"
+PH_G2P_CHART_VERSION="1.5.0"
+PH_CHART_REPO_NAME="g2p-sandbox-1-5"
 # Define Kubernetes service and MySQL connection details
 MYSQL_SERVICE_NAME="mysql"  # Replace with your MySQL service name
 MYSQL_SERVICE_PORT="3306"           # Replace with the MySQL service port

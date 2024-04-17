@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-source ./src/mojafos/configurationManager/config.sh
-
 function deployHelmChartFromDir() {
   # Check if Helm is installed
   if ! command -v helm &>/dev/null; then
@@ -73,7 +71,7 @@ function deployHelmChartFromDir() {
 
 }
 
-function deployHelmChartFromRepo(){
+function deployPhHelmChartFromRepo(){
   #parameters
   local namespace="$1"
 
@@ -87,7 +85,7 @@ function deployHelmChartFromRepo(){
   LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
   su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
   echo "$PH_VALUES_FILE"
-  su - $k8s_user -c "helm install $PH_RELEASE_NAME g2p-sandbox/ph-ee-g2psandbox --version 1.3.1 -n $namespace -f $PH_VALUES_FILE"
+  su - $k8s_user -c "helm install $PH_RELEASE_NAME $PH_CHART_REPO_NAME/ph-ee-g2psandbox --version $PH_G2P_CHART_VERSION -n $namespace -f $PH_VALUES_FILE"
 
   # Use kubectl to get the resource count in the specified namespace
   resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
@@ -333,7 +331,7 @@ function deployPH(){
   createNamespace "$PH_NAMESPACE"
   cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
-  deployHelmChartFromRepo "$PH_NAMESPACE"
+  deployPhHelmChartFromRepo "$PH_NAMESPACE"
   # runKongMigrations
 
   echo -e "\n${GREEN}============================"
