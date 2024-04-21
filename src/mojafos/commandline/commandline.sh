@@ -111,7 +111,6 @@ function main {
     echo -e "===================================================================================="
     echo -e "${RESET}"
     envSetupMain "$mode" "k3s" "1.26"
-    deployInfrastructure
     deployApps
   elif [ $mode == "cleanup" ]; then
     logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"

@@ -332,7 +332,6 @@ function deployPH(){
   cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
   deployPhHelmChartFromRepo "$PH_NAMESPACE"
-  # runKongMigrations
 
   echo -e "\n${GREEN}============================"
   echo -e "Paymenthub Deployed"
@@ -402,24 +401,28 @@ function deployApps {
 
   if [ -z "$appsToDeploy" ]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
+    deployInfrastructure
     deployMojaloop
-    # deployPaymentHubEE
     deployPH
     deployFineract
   elif [[ "$appsToDeploy" == "all" ]]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
+    deployInfrastructure
     deployMojaloop
     deployPH
     deployFineract
   elif [[ "$appsToDeploy" == "moja" ]];then
+    deployInfrastructure
     deployMojaloop
   elif [[ "$appsToDeploy" == "fin" ]]; then 
+    deployInfrastructure
     deployFineract
   elif [[ "$appsToDeploy" == "ph" ]]; then
     deployPH
   else 
     echo -e "${RED}Invalid option ${RESET}"
     echo "Defaulting to all... "
+    deployInfrastructure
     deployMojaloop
     deployPH
     deployFineract

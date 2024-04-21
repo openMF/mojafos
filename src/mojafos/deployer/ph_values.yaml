@@ -10,6 +10,10 @@ ph-ee-engine:
     requests:
       cpu: "1m"
       memory: "1M"
+
+  operations_web:
+    ingress:
+      enabled: true
   
   operations_app:
     limits:
