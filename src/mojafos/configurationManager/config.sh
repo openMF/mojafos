@@ -136,7 +136,7 @@ function configureMojaloop() {
   if [ $? -eq 0 ]; then
     echo -e "\n==> Mojaloop Manifests edited successfully"
   else
-    echo -e "${RED}Mojaloop Manifests were not edited successfully${RESET}"
+    echo -e "${RED`}Mojaloop Manifests were not edited successfully${RESET}"
   fi
 }
 
