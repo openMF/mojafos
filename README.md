@@ -19,7 +19,7 @@ To use Mojafos, you need to clone the repository to be able to run the software 
 Clone the repository into a directory of your choice.
 After cloning the repository,  you need to change the directory into the cloned repository.
 ``` 
-git clone https://github.com/elijah0kello/mojafos.git
+git clone https://github.com/openMF/mojafos.git
 ```
 
 Inside the directory run the following command to execute the script.
