@@ -4,6 +4,11 @@
 
 The deployable package is intended to simplify and automate the deployment process of three software applications, namely Mojaloop, PaymentHub, and Fineract, onto a Kubernetes cluster. This package aims to streamline the deployment process, reduce manual errors, and enable someone to demo how these softwares can work together. 
 
+## Latest versions
+- Latest stable release of Fineract core banking system (1.9 or current)
+- Latest stable version of Mojaloop (vNext)
+- Latest stable release of Mifos X Web App (23.12 or later)
+- Latest upstream version of Payment Hub EE
 
 ## Pre-requisites
 Make sure you have the following before you go through this guide.
