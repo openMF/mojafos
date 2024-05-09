@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The deployable package is intended to simplify and automate the deployment process of three software applications, namely Mojaloop, PaymentHub, and Fineract, onto a Kubernetes cluster. This package aims to streamline the deployment process, reduce manual errors, and enable someone to demo how these softwares can work together. 
+The deployable package is intended to simplify and automate the deployment process of three software applications, namely [Mojaloop](https://github.com/openMF/mojafos), [PaymentHub](https://github.com/openMF/payment-hub), and [Fineract](https://github.com/openMF/fineract), onto a Kubernetes cluster. This package aims to streamline the deployment process, reduce manual errors, and enable someone to demo how these softwares can work together. 
 
 
 ## Pre-requisites
@@ -68,11 +68,11 @@ What would you like to Deploy? all/moja/fin/ph
 
 At the prompt type the mode you would like to use. 
 
-After typing in the short code to represnt the mode you would want to install, the script will proceed to execute the installation as instructed.
+After typing in the short code to represent the mode you would want to install, the script will proceed to execute the installation as instructed.
 
-If you enter invalide input, the script will default to deploying all apps.
+If you enter invalid input, the script will default to deploying all apps.
 
-If you chose `fin` or `all`, at some point in the script's execution, it will ask you for the number of fineract instances you would like to deploy.
+If you choose `fin` or `all`, at some point in the script's execution, it will ask you for the number of fineract instances you would like to deploy.
 
 ```
 How many instances of fineract would you like to deploy? Enter number:
@@ -101,7 +101,7 @@ kubectl get pods -n paymenthub #For testing paymenthub
 kubectl get pods -n fineract-n #For testing fineract. n is a number of a fineract instance
 
 
-Copyright © 2023 The Mifos Initiative
+Copyright © 2024 The Mifos Initiative
 ```
 
 ## USING THE DEPLOYED APPS
