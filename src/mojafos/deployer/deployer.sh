@@ -1,5 +1,30 @@
 #!/usr/bin/env bash
 
+
+function deleteResourcesInNamespsceMatchingPattern(){
+  local pattern="$1"
+
+    # Check if the pattern is provided
+    if [ -z "$pattern" ]; then
+        echo "Pattern not provided."
+        exit 1
+    fi
+
+    # Get the list of namespaces and filter them based on the pattern
+    namespaces=$(kubectl get namespaces -o=name | grep "$pattern")
+
+    # Loop through the filtered namespaces and delete resources in each one
+    while IFS= read -r namespace; do
+        namespace=$(echo "$namespace" | cut -d'/' -f2)
+        kubectl delete all --all -n "$namespace"
+        if [ $? -eq 0 ]; then
+            echo "All resources in namespace $namespace deleted successfully."
+        else
+            echo "Error deleting resources in namespace $namespace."
+        fi
+    done <<< "$namespaces"
+}
+
 function deployHelmChartFromDir() {
   # Check if Helm is installed
   if ! command -v helm &>/dev/null; then
@@ -344,7 +369,7 @@ function deployFineract() {
   cloneRepo "$FIN_BRANCH" "$FIN_REPO_LINK" "$APPS_DIR" "$FIN_REPO_DIR"
   configureFineract
 
-  read -p "How many instances of fineract would you like to deploy? Enter number: " num_instances
+  num_instances=$1
 
   if [[ -z "$num_instances" ]];then
     num_instances=2
@@ -395,28 +420,27 @@ function printEndMessage {
 }
 
 function deployApps {
-  printf "${YELLOW}What would you like to Deploy? all/moja/fin/ph ${RESET}"
-  read -p " " appsToDeploy
-  echo $appsToDeploy
+  fin_num_instances="$1"
+  appsToDeploy="$2"
 
   if [ -z "$appsToDeploy" ]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract
+    deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "all" ]]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract
+    deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "moja" ]];then
     deployInfrastructure
     deployMojaloop
   elif [[ "$appsToDeploy" == "fin" ]]; then 
     deployInfrastructure
-    deployFineract
+    deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "ph" ]]; then
     deployPH
   else 
@@ -425,7 +449,7 @@ function deployApps {
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract
+    deployFineract "$fin_num_instances"
   fi
   addKubeConfig >> /dev/null 2>&1
   printEndMessage

@@ -8,11 +8,11 @@ APPS_DIR="$BASE_DIR/src/mojafos/deployer/apps/"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="mojafos-infra"
 #mojaloop
-MOJALOOPBRANCH="alpha-1.1"
+MOJALOOPBRANCH="beta1"
 MOJALOOPREPO_DIR="mojaloop"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
-MOJALOOP_LAYER_DIRS=("$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/ttk" )
+MOJALOOP_LAYER_DIRS=("$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/ttk" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/reporting")
 MOJALOOP_VALUES_FILE="$BASE_DIR/src/mojafos/configurationManager/mojaloop_values.json"
 #paymenthubee
 PHBRANCH="v1.2.0-release"
