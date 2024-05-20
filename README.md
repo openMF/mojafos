@@ -193,7 +193,9 @@ This will delete all resources in the created namespaces and if the kubernetes c
 Please note that cleaning up the resources will take some time.
 
 ## CONTRIBUTION
- TBD
+
+
+Find the contributing guidelines here[https://github.com/openMF/mojafos/blob/master/CONTRIBUTING.md]
 
 ## CONCLUSION
 
