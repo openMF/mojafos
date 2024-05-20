@@ -19,7 +19,7 @@ To use Mojafos, you need to clone the repository to be able to run the software 
 Clone the repository into a directory of your choice.
 After cloning the repository,  you need to change the directory into the cloned repository.
 ``` 
-git clone https://github.com/elijah0kello/mojafos.git
+git clone https://github.com/openMF/mojafos.git
 ```
 
 Inside the directory run the following command to execute the script.
@@ -39,51 +39,21 @@ sudo ./run.sh -u $USER -m deploy -d true -a all -f 2 -e local
 - `-f` This flag specifies the number of fineract instances to deployed. If not specified, the default number of instances is 2
 - `-e` This flag specifies the environment into which the applications should be deployed. If not specified, it will deploy into k3s locally.
 
-> DOCS TO BE UPDATED
 
-After running this command, it will run a few checks and then it will ask you whether you want to setup a kubernetes cluster locally or you want to connect to a remote one that is already configured using kubectl
-```
-Would you like to use a remote Kubernetes cluster or a local one? (remote/local): 
-```
-Choose your preferred option depending on where you want to run the kubernetes cluster to run the applications.
-Enter remote to use a remote cluster and enter local to let the tool create a local cluster using k3s.
->Currently the tool is only tested on local kubernetes deployments but work is being done to test it on remote kubernetes clusters
-
-After entering in your preferred option allow the script to run and deploy the softwares.
-
-The script will start by deploying and configuring shared infrastructure to be used by the applications. After infrastructure has been deployed, you should see the following output
-
-```bash
-============================
-Infrastructure Deployed
-============================
-```
-The script will then prompt you upon completion of deployment of infrastructure to choose what kind of deployment you would like to make. 
-
-There are three modes of deployment currently supported by Mojafos
+# App Deployment Modes -a
+There are three modes of deployment currently supported by Mojafos. This is relevant for the -a option
 - Only Mojaloop `moja`
 - Only Fineract `fin`
 - Only Payment Hub `ph`
 - All Apps `all`
 
-The prompt will look like this.
-```bash
-What would you like to Deploy? all/moja/fin/ph 
-```
 
-At the prompt type the mode you would like to use. 
+# Target Environment -e
+You can set the environment into which the applications should be deployed by setting the -e argument at the point of executing the script.
 
-After typing in the short code to represnt the mode you would want to install, the script will proceed to execute the installation as instructed.
+To use a remote kubernetes cluster, use the value `remote` and to create a local k8s cluster, use `local`
+>Currently the tool is only tested on local kubernetes deployments but work is being done to test it on 
 
-If you enter invalide input, the script will default to deploying all apps.
-
-If you chose `fin` or `all`, at some point in the script's execution, it will ask you for the number of fineract instances you would like to deploy.
-
-```
-How many instances of fineract would you like to deploy? Enter number:
-```
-
-Enter the number of instances you would like to deploy and press enter.
 
 After  the script has successfully executed it will print the following output
 
@@ -109,10 +79,10 @@ kubectl get pods -n fineract-n #For testing fineract. n is a number of a finerac
 Copyright © 2023 The Mifos Initiative
 ```
 
-## USING THE DEPLOYED APPS
+# USING THE DEPLOYED APPS
 
-## ACCESSING MOJALOOP
-The Mojafos scripts add the required host names to the 127.0.0.1 entry in the /etc/hosts of the "install system" i.e. the system where Mojaloop is deployed. To access Mojaloop from beyond this system it is necessary to:-
+## Accessing Mojaloop
+The Mojafos scripts add the required host names to the 127.0.0.1 entry in the /etc/hosts of the "install system" i.e. the system where mojafos is run. To access Mojaloop from beyond this system it is necessary to:-
 
 ensure that http / port 80 is accessible on the install system. For instance if mojafos has installed Mojaloop onto a VM in the cloud then it will be necessary to ensure that the cloud network security rules allow inbound traffic on port 80 to that VM.
 
@@ -148,7 +118,79 @@ Note you can only have one host per line so on windows 10 your hosts file should
 192.168.56.100 greenbank.local
 ```
 
-## ACCESSING PAYMENTHUB
+## Accessing Paymenthub
+
+To access paymenthub, you would follow a similar set of instructions just like for accessing mojaloop. 
+
+## MacOs and Linux
+add the hosts listed below to an entry for the external/public ip address of that install system in the /etc/hosts file of the laptop you are using.
+For example if Paymenthub is installed on a cloud VM with a public IP of 192.168.56.100 Then add an entry to your laptop's /etc/hosts similar to ...
+
+```bash
+192.168.56.100 ops.sandbox.mifos.io
+```
+
+You should now be able to browse or curl to Paymenthub Operations Web portal url using http://ops.sandbox.mifos.io .
+
+## Windows
+- open Notepad
+- Right click on Notepad and then Run as Administrator.
+- allow this app to make changes to your device? type Yes.
+- In Notepad, choose File then Open C:\Windows\System32\drivers\etc\hosts or click the address bar at the top and paste in the path and choose Enter. If you don’t see the host file in the /etc directory then select All files from the File name: drop-down list, then click on the hosts file.
+- Add the IP from your VM or system and then add a host from the list of required hosts (see example below)
+- flush your DNS cache. Click the Windows button and search command prompt, in the command prompt:-
+```bash
+ipconfig /flushdns
+```
+Note you can only have one host per line so on windows 10 your hosts file should look something like:
+
+```bash
+192.168.56.100 ops.sandbox.mifos.io
+```
+
+# Accessing Fineract
+To access the fineract instances you just deployed using mojafos, you will needs to make similar edits to your hosts file configuration of your computer.
+
+## MacOs and Linux
+add the hosts listed below to an entry for the external/public ip address of that install system in the /etc/hosts file of the laptop you are using.
+For example if one of the instances of fineract is installed on a cloud VM with a public IP of 192.168.56.100 Then add an entry to your laptop's /etc/hosts similar to ...
+
+```bash
+192.168.56.100 1-communityapp.sandbox.fynarfin.io 1-fynams.sandbox.fynarfin.io
+```
+Notice the 1 at the begining of the host name. This is automatically prepended at the begining of a fineract instance's host names to form it's ingress domain name.
+
+If you set the number of fineract instances to 3, you would have domains ranging from `1-xxx.sandbox.fynarfin.io` to `3-xxx.fynarfin.io`
+
+After editing your hosts config with the number of fineract instances you deployed, you should now be able to browse or curl to Community App url using http://1-communityapp.sandbox.fynarfin.io and fineract at http://1-fynams.sandbox.fynarfin.io
+
+## Windows
+- open Notepad
+- Right click on Notepad and then Run as Administrator.
+- allow this app to make changes to your device? type Yes.
+- In Notepad, choose File then Open C:\Windows\System32\drivers\etc\hosts or click the address bar at the top and paste in the path and choose Enter. If you don’t see the host file in the /etc directory then select All files from the File name: drop-down list, then click on the hosts file.
+- Add the IP from your VM or system and then add a host from the list of required hosts (see example below)
+- flush your DNS cache. Click the Windows button and search command prompt, in the command prompt:-
+```bash
+ipconfig /flushdns
+```
+Note you can only have one host per line so on windows 10 your hosts file should look something like:
+
+```bash
+192.168.56.100 1-communityapp.sandbox.fynarfin.io 
+192.168.56.100 1-fynams.sandbox.fynarfin.io
+```
+# Clean Up
+
+To tear down the infrastructure and all installed apps. You can run this command.
+
+```bash
+sudo ./run.sh -u $USER -m cleanup -d true 
+```
+
+This will delete all resources in the created namespaces and if the kubernetes cluster is `k3s` it will delete it as well.
+
+Please note that cleaning up the resources will take some time.
 
 ## CONTRIBUTION
  TBD

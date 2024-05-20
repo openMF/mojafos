@@ -8,7 +8,7 @@ APPS_DIR="$BASE_DIR/src/mojafos/deployer/apps/"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="mojafos-infra"
 #mojaloop
-MOJALOOPBRANCH="beta1"
+MOJALOOPBRANCH="alpha-1.1"
 MOJALOOPREPO_DIR="mojaloop"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"

@@ -566,7 +566,11 @@ function envSetupMain {
         deleteResourcesInNamespsceMatchingPattern "mojaloop"
         deleteResourcesInNamespsceMatchingPattern "paymenthub"
         deleteResourcesInNamespsceMatchingPattern "infra"
-        #delete_k8s
+        if [[ "$environment" == "local" ]]; then
+            echo "Deleting local kubernetes cluster..."
+            delete_k8s
+            echo "Local Kubernetes deleted"
+        fi
         print_end_message_tear_down
     else
         showUsage
