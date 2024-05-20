@@ -466,7 +466,7 @@ Options:
 }
 
 function setup_k8s_cluster {
-        read -p "Would you like to use a remote Kubernetes cluster or a local one? (remote/local): " cluster_type
+        cluster_type="$2"
 
         if [ -z "$cluster_type" ]; then
             printf "Cluster type not set. Defaulting to local \n"
@@ -537,6 +537,7 @@ function envSetupMain {
     mode="$1"
     k8s_distro="$2"
     k8s_user_version="$3"
+    environment="$4"
 
     check_arch_ok
     set_user
@@ -552,7 +553,7 @@ function envSetupMain {
         check_os_ok # todo add check to this once tested across other OS's more fully
         install_prerequisites
         add_hosts
-        setup_k8s_cluster $k8s_distro
+        setup_k8s_cluster $k8s_distro $environment
         install_k8s_tools
         add_helm_repos
         configure_k8s_user_env
@@ -561,7 +562,15 @@ function envSetupMain {
                     "$k8s_distro" "$K8S_VERSION" "$k8s_user"
         print_end_message
     elif [[ "$mode" == "cleanup" ]]  ; then
-        delete_k8s
+        deleteResourcesInNamespsceMatchingPattern "fineract"
+        deleteResourcesInNamespsceMatchingPattern "mojaloop"
+        deleteResourcesInNamespsceMatchingPattern "paymenthub"
+        deleteResourcesInNamespsceMatchingPattern "infra"
+        if [[ "$environment" == "local" ]]; then
+            echo "Deleting local kubernetes cluster..."
+            delete_k8s
+            echo "Local Kubernetes deleted"
+        fi
         print_end_message_tear_down
     else
         showUsage

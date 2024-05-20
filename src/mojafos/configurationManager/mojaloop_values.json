@@ -1,161 +1,161 @@
 [
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/fspiop-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/fspiop-api-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/fspiop-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/fspiop-api-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/account-lookup-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/account-lookup-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/account-lookup-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/account-lookup-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/quoting-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/quoting-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/quoting-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/quoting-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/settlements-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/settlements-api-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/settlements-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/settlements-api-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/settlements-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/settlements-api-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/platform-configuration-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/platform-configuration-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/authorization-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/authorization-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/transfers-event-handler-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/transfers-event-handler-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/authentication-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/authentication-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/transfers-command-handler-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/transfers-command-handler-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/transfers-command-handler-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/transfers-command-handler-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/settlements-command-handler-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/settlements-command-handler-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/settlements-command-handler-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/settlements-command-handler-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/transfers-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/transfers-api-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/transfers-api-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/transfers-api-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
     "old_value": "value: redis-master",
     "new_value": "value: redis-master.infra.svc.cluster.local"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/settlements-event-handler-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/settlements-event-handler-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/participants-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/participants-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/participants-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/participants-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
     "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
     "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
     "old_value": "value: redis-master",
     "new_value": "value: redis-master.infra.svc.cluster.local"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/auditing-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/auditing-svc-deployment.yaml",
     "old_value": "value: http:\\/\\/infra-elasticsearch:9200",
     "new_value": "value: http:\\/\\/mojafos-infra-elasticsearch.infra.svc.cluster.local:9200"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/auditing-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/auditing-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/logging-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/logging-svc-deployment.yaml",
     "old_value": "value: http:\\/\\/infra-elasticsearch:9200",
     "new_value": "value: http:\\/\\/mojafos-infra-elasticsearch.infra.svc.cluster.local:9200"
   },
   {
-    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/deployment/k8s/crosscut/logging-svc-deployment.yaml",
+    "file_name": "src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut/logging-svc-deployment.yaml",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.infra.svc.cluster.local:9092"
   }

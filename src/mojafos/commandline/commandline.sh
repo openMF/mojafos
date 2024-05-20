@@ -38,13 +38,19 @@ Options:
 function getoptions {
   local mode_opt
 
-  while getopts "m:n:d:u:hH" OPTION ; do
+  while getopts "m:n:d:a:f:e:u:hH" OPTION ; do
     case "${OPTION}" in
             m)	    mode_opt="${OPTARG}"
             ;;
             k)      k8s_distro="${OPTARG}"
             ;;
             d)      debug="${OPTARG}"
+            ;;
+            a)      apps="${OPTARG}"
+            ;;
+            f)      fineract_instansces="${OPTARG}"
+            ;;
+            e)      environment="${OPTARG}"
             ;;
             v)	    k8s_user_version="${OPTARG}"
             ;;
@@ -110,11 +116,11 @@ function main {
     echo -e "The deployment made by this script is meant for demo purposes and not for production"
     echo -e "===================================================================================="
     echo -e "${RESET}"
-    envSetupMain "$mode" "k3s" "1.26"
-    deployApps
+    envSetupMain "$mode" "k3s" "1.26" "$environment"
+    deployApps "$fineract_instansces" "$apps"
   elif [ $mode == "cleanup" ]; then
     logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
-    envSetupMain "$mode" "k3s" "1.26"
+    envSetupMain "$mode" "k3s" "1.26" "$environment"
   else
     showUsage
   fi
