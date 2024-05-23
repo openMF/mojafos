@@ -194,7 +194,7 @@ Please note that cleaning up the resources will take some time.
 
 ## CONTRIBUTION
 
-Find the contributing guidelines here[https://github.com/openMF/mojafos/blob/master/CONTRIBUTING.md]
+Find the contributing guidelines [here](./CONTRIBUTING.md)
 
 ## CONCLUSION
 
