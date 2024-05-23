@@ -8,7 +8,7 @@ Thank you for your interest in contributing to the Mojafos repository! Your cont
 - Fork the repository and clone it locally.
   
   ```
-  git clone https://github.com/<your_github_username>/mojafos.git
+  git clone https://github.com/openMF/mojafos.git
   ```
   
 - Create a new branch for your contributions
