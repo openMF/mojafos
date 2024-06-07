@@ -25,6 +25,10 @@ fineract:
     annotations:
       kubernetes.io/ingress.class: "nginx"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    tls:  # Add TLS configuration here
+      - hosts:
+          - "2-fynams.sandbox.fynarfin.io"
+        secretName: "fineract-tls-secret"
   resources:
     limits:
       cpu: "1000m"
