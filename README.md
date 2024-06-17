@@ -185,7 +185,7 @@ Note you can only have one host per line so on windows 10 your hosts file should
 To tear down the infrastructure and all installed apps. You can run this command.
 
 ```bash
-sudo ./run.sh -u $USER -m cleanup -d true 
+sudo ./run.sh -u $USER -m cleanup -d true -e local
 ```
 
 This will delete all resources in the created namespaces and if the kubernetes cluster is `k3s` it will delete it as well.

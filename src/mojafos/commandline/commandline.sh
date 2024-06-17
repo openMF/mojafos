@@ -87,7 +87,7 @@ function cleanUp ()
 
     mode="cleanup"
     echo "Doing cleanup" 
-    envSetupMain "$mode" "k3s" "1.26"
+    envSetupMain "$mode" "k3s" "1.26" "$environment"
 
     # exit shell script with error code 2
     # if omitted, shell script will continue execution
