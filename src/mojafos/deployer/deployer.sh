@@ -96,9 +96,40 @@ function deployHelmChartFromDir() {
 
 }
 
-function deployPhHelmChartFromRepo(){
-  #parameters
+function preparePaymentHubChart(){
+  # Clone the repositories
+  cloneRepo "$PH_EE_ENV_LABS_REPO_BRANCH" "$PH_EE_ENV_LABS_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_LABS_REPO_DIR"
+  cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
+
+  # Update helm dependencies and repo index for ph-ee-engine
+  phEEenginePath="$APPS_DIR/$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/ph-ee-engine"
+  pushd "$phEEenginePath"
+  helm dep update 
+  helm repo index .
+  popd
+
+  # Update helm dependencies and repo index for g2p-sandbox in ph-ee-env-template
+  g2pSandboxChartPath="$APPS_DIR/$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/g2p-sandbox"
+  awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$g2pSandboxChartPath/Chart.yaml" > "$g2pSandboxChartPath/Chart.yaml.tmp" && mv "$g2pSandboxChartPath/Chart.yaml.tmp" "$g2pSandboxChartPath/Chart.yaml"
+  pushd "$g2pSandboxChartPath"
+  helm dep update 
+  helm repo index .
+  popd
+
+  # Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
+  g2pSandboxFinalChartPath="$APPS_DIR/$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
+  awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
+  pushd "$g2pSandboxFinalChartPath"
+  helm dep update 
+  helm repo index .
+  popd
+}
+
+function deployPhHelmChartFromDir(){
+  # Parameters
   local namespace="$1"
+  local chartDir="$2"      # Directory containing the Helm chart
+  local valuesFile="$3"    # Values file for the Helm chart
 
   # Check if Helm is installed
   if ! command -v helm &>/dev/null; then
@@ -106,23 +137,32 @@ function deployPhHelmChartFromRepo(){
     exit 1
   fi
 
-  # install the helm chart 
-  LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
-  su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
-  echo "$PH_VALUES_FILE"
-  su - $k8s_user -c "helm install $PH_RELEASE_NAME $PH_CHART_REPO_NAME/ph-ee-g2psandbox --version $PH_G2P_CHART_VERSION -n $namespace -f $PH_VALUES_FILE"
+  # Check if kubectl is installed
+  if ! command -v kubectl &>/dev/null; then
+    echo "kubectl is not installed. Please install kubectl first."
+    exit 1
+  fi
 
-  # Use kubectl to get the resource count in the specified namespace
+  # Install Prometheus Operator as a dependency
+  LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
+  su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
+
+  # Install the Helm chart from the local directory
+  if [ -z "$valuesFile" ]; then
+    su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace"
+  else
+    su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile"
+  fi
+
+  # Check deployment status
   resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
 
-  # Check if the deployment was successful
-  if [ $resource_count -gt 0 ]; then
+  if [ "$resource_count" -gt 0 ]; then
     echo "Helm chart deployed successfully."
   else
     echo -e "${RED}Helm chart deployment failed.${RESET}"
     cleanUp
   fi
-  
 }
 
 function createNamespace () {
@@ -356,7 +396,9 @@ function deployPH(){
   createNamespace "$PH_NAMESPACE"
   cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
-  deployPhHelmChartFromRepo "$PH_NAMESPACE"
+  # deployPhHelmChartFromRepo "$PH_NAMESPACE"
+  preparePaymentHubChart
+  deployPhHelmChartFromDir "$PH_NAMESPACE" "$g2pSandboxFinalChartPath" "$PH_VALUES_FILE"
 
   echo -e "\n${GREEN}============================"
   echo -e "Paymenthub Deployed"
