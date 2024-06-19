@@ -102,14 +102,14 @@ function preparePaymentHubChart(){
   cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
 
   # Update helm dependencies and repo index for ph-ee-engine
-  phEEenginePath="$APPS_DIR/$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/ph-ee-engine"
+  phEEenginePath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/ph-ee-engine"
   pushd "$phEEenginePath"
   helm dep update 
   helm repo index .
   popd
 
   # Update helm dependencies and repo index for g2p-sandbox in ph-ee-env-template
-  g2pSandboxChartPath="$APPS_DIR/$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/g2p-sandbox"
+  g2pSandboxChartPath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/g2p-sandbox"
   awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$g2pSandboxChartPath/Chart.yaml" > "$g2pSandboxChartPath/Chart.yaml.tmp" && mv "$g2pSandboxChartPath/Chart.yaml.tmp" "$g2pSandboxChartPath/Chart.yaml"
   pushd "$g2pSandboxChartPath"
   helm dep update 
@@ -117,7 +117,7 @@ function preparePaymentHubChart(){
   popd
 
   # Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
-  g2pSandboxFinalChartPath="$APPS_DIR/$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
+  g2pSandboxFinalChartPath="$APPS_DIR$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
   awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
   pushd "$g2pSandboxFinalChartPath"
   helm dep update 
