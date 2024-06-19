@@ -24,6 +24,12 @@ PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
 PH_HELM_REPO_LINK="https://fynarfin.io/images/ph-ee-g2psandbox-1.5.0/"
 PH_G2P_CHART_VERSION="1.5.0"
 PH_CHART_REPO_NAME="g2p-sandbox-1-5"
+PH_EE_ENV_LABS_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
+PH_EE_ENV_LABS_REPO_BRANCH="master"
+PH_EE_ENV_LABS_REPO_DIR="ph_env_labs"
+PH_EE_ENV_TEMPLATE_REPO_LINK="https://github.com/openMF/ph-ee-env-template.git"
+PH_EE_ENV_TEMPLATE_REPO_BRANCH="master"
+PH_EE_ENV_TEMPLATE_REPO_DIR="ph_template"
 # Define Kubernetes service and MySQL connection details
 MYSQL_SERVICE_NAME="mysql"  # Replace with your MySQL service name
 MYSQL_SERVICE_PORT="3306"           # Replace with the MySQL service port

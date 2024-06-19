@@ -24,7 +24,7 @@ git clone https://github.com/openMF/mojafos.git
 
 Inside the directory run the following command to execute the script.
 
-```
+```bash
 sudo ./run.sh -u $USER -m deploy -d true -a all -f 2 -e local
 ```
 ### Options
