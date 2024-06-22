@@ -34,15 +34,14 @@ function set_user {
 
 function k8s_already_installed {
     if [[ -f "/usr/local/bin/k3s" ]]; then
-        printf "** warning k3s is already installed => using existing deployment **\n"
-        return 1
+        printf "** Error , k3s is already installed , please delete before reinstalling kubernetes  **\n"
+        exit 1
     fi
     #check to ensure microk8s isn't already installed when installing k3s
     if [[ -f "/snap/bin/microk8s" ]]; then
-        printf "** warning , microk8s is already installed, using existing deployment  **\n"
-        return 1 
+        printf "** Error , microk8s is already installed, please delete before reinstalling kubernetes  **\n"
+        exit 1
     fi
-    return 0
 }
 
 function set_linux_os_distro {
@@ -298,44 +297,25 @@ function do_k3s_install {
         printf "** Error : helm install seems to have failed ** \n"
         exit 1
     fi
-}
 
-function check_nginx_running { 
-    # Check if the Nginx pod is running
-    if kubectl get pods $nginx_pod_name | grep -q "Running"; then
-        # ok nginx is running 
-        return 0 
-    else
-        # nope it is not running 
-        return 1 
-    fi
-} 
-
-function install_nginx { 
     #install nginx
     printf "\r==> installing nginx ingress chart and wait for it to be ready "
-    if [[ check_nginx_running -eq 0 ]]; then 
-        printf "[ nginx already installed and running ] \n"
-        return 0 
-    fi 
-    if [[ $cluster_type == "local" ]]; then 
-        if [[ $k8s_distro == "microk8s" ]]; then 
-            microk8s.enable ingress
-            printf "[ok]\n"
-        else # i.e. k3s 
-            su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx" > /dev/null 2>&1
-            # TODO : check to ensure that the ingress is indeed running
-            nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
+    su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx" > /dev/null 2>&1
+    # TODO : check to ensure that the ingress is indeed running
+    nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
 
-            # Check if the Nginx pod is running
-            if [[ check_nginx_running -eq 0 ]]; then 
-                printf "[ok]\n"
-            else
-                printf "** Error : helm install of nginx seems to have failed , nginx pod is not running  ** \n"
-                exit 1
-            fi
-        fi 
-    fi 
+    if [ -z "$nginx_pod_name" ]; then
+        printf "** Error : helm install of nginx seems to have failed , no nginx pod found ** \n"
+        exit 1
+    fi
+    # Check if the Nginx pod is running
+    if kubectl get pods $nginx_pod_name | grep -q "Running"; then
+        printf "[ok]\n"
+    else
+        printf "** Error : helm install of nginx seems to have failed , nginx pod is not running  ** \n"
+        exit 1
+    fi
+
 }
 
 function install_k8s_tools {
@@ -569,13 +549,11 @@ function envSetupMain {
         check_resources_ok
         set_k8s_distro
         set_k8s_version
-        if [[ ! k8s_already_installed ]]; then 
-            check_os_ok # todo add check to this once tested across other OS's more fully
-            install_prerequisites
-            add_hosts
-            setup_k8s_cluster $k8s_distro $environment
-            install_nginx
-        fi 
+        k8s_already_installed
+        check_os_ok # todo add check to this once tested across other OS's more fully
+        install_prerequisites
+        add_hosts
+        setup_k8s_cluster $k8s_distro $environment
         install_k8s_tools
         add_helm_repos
         configure_k8s_user_env
