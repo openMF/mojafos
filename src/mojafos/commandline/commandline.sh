@@ -26,7 +26,7 @@ Example 2 : sudo $0  -m cleanup -u \$USER -d true # delete mojafos with debug mo
 Example 3 : sudo $0  -m deploy -u \$USER -d false # install mojafos without debug mode and user \$USER
 
 Options:
--m mode ............... install|delete (-m is required)
+-m mode ............... deploy|cleanup (-m is required)
 -u user................ user that the process will use for execution
 -d debug............... debug mode. if set debug is true, if not set debug is false
 -h|H .................. display this message
