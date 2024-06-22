@@ -458,33 +458,6 @@ function print_end_message_tear_down {
   echo -e "Copyright © 2023 The Mifos Initiative"
 }
 
-################################################################################
-# Function: showUsage
-################################################################################
-# Description:		Display usage message
-# Arguments:		none
-# Return values:	none
-#
-function showUsage {
-	if [ $# -ne 0 ] ; then
-		echo "Incorrect number of arguments passed to function $0"
-		exit 1
-	else
-echo  "USAGE: $0 -m [mode] -u [user] -v [k8 version] -k [distro] [-f]
-Example 1 : run -m install -v 1.25 -k k3s # install k8s k3s version 1.24
-Example 2 : run -m delete  -v 1.26 -k microk8s # delete  k8s microk8s version 1.26
-Example 3 : run -m install -k microk8s -v 1.26 -k k3s # install k8s microk8s distro version 1.26
-
-Options:
--m mode ............... install|delete (-m is required)
--k kubernetes distro... microk8s|k3s (default=k3s as it installs across multiple linux distros)
--v k8s version ........ 1.24|1.25|1.26 i.e. current k8s releases at time if this mojafos release
--h|H .................. display this message
-"
-	fi
-
-}
-
 function setup_k8s_cluster {
         cluster_type="$2"
 
@@ -583,7 +556,13 @@ function envSetupMain {
         printf "\r==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for mojaloop deployment \n" \
                     "$k8s_distro" "$K8S_VERSION" "$k8s_user"
         print_end_message
-    elif [[ "$mode" == "cleanup" ]]  ; then
+    elif [[ "$mode" == "cleanapps" ]]  ; then
+        # remove all apps 
+        deleteResourcesInNamespsceMatchingPattern "fineract"
+        deleteResourcesInNamespsceMatchingPattern "mojaloop"
+        deleteResourcesInNamespsceMatchingPattern "paymenthub"
+        deleteResourcesInNamespsceMatchingPattern "infra"    
+    elif [[ "$mode" == "cleanall" ]]  ; then
         deleteResourcesInNamespsceMatchingPattern "fineract"
         deleteResourcesInNamespsceMatchingPattern "mojaloop"
         deleteResourcesInNamespsceMatchingPattern "paymenthub"

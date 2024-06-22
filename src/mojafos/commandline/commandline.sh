@@ -26,7 +26,7 @@ Example 2 : sudo $0  -m cleanup -u \$USER -d true # delete mojafos with debug mo
 Example 3 : sudo $0  -m deploy -u \$USER -d false # install mojafos without debug mode and user \$USER
 
 Options:
--m mode ............... deploy|cleanup (-m is required)
+-m mode ............... deploy|cleanapps|cleanall (-m is required)
 -u user................ user that the process will use for execution
 -d debug............... debug mode. if set debug is true, if not set debug is false
 -h|H .................. display this message
@@ -118,7 +118,10 @@ function main {
     echo -e "${RESET}"
     envSetupMain "$mode" "k3s" "1.26" "$environment"
     deployApps "$fineract_instansces" "$apps"
-  elif [ $mode == "cleanup" ]; then
+  elif [ $mode == "cleanapps" ]; then  
+    logWithVerboseCheck $debug info "Cleaning up Mojafos applications only"
+    envSetupMain "$mode" "k3s" "1.26" "$environment"
+  elif [ $mode == "cleanall" ]; then
     logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
     envSetupMain "$mode" "k3s" "1.26" "$environment"
   else

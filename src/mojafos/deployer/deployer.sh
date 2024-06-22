@@ -17,11 +17,12 @@ function deleteResourcesInNamespsceMatchingPattern(){
     while IFS= read -r namespace; do
         namespace=$(echo "$namespace" | cut -d'/' -f2)
         kubectl delete all --all -n "$namespace"
+        kubectl delete ns $namespace 
         if [ $? -eq 0 ]; then
             echo "All resources in namespace $namespace deleted successfully."
         else
             echo "Error deleting resources in namespace $namespace."
-        fi
+        fi      
     done <<< "$namespaces"
 }
 
@@ -108,7 +109,7 @@ function preparePaymentHubChart(){
   helm repo index .
   popd
 
-  # Update helm dependencies and repo index for g2p-sandbox in ph-ee-env-template
+  # TEMPLATE => Update helm dependencies and repo index for g2p-sandbox in ph-ee-env-template
   g2pSandboxChartPath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/g2p-sandbox"
   awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$g2pSandboxChartPath/Chart.yaml" > "$g2pSandboxChartPath/Chart.yaml.tmp" && mv "$g2pSandboxChartPath/Chart.yaml.tmp" "$g2pSandboxChartPath/Chart.yaml"
   pushd "$g2pSandboxChartPath"
@@ -116,7 +117,7 @@ function preparePaymentHubChart(){
   helm repo index .
   popd
 
-  # Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
+  # PHEE-LABS Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
   g2pSandboxFinalChartPath="$APPS_DIR$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
   awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
   pushd "$g2pSandboxFinalChartPath"
@@ -170,8 +171,8 @@ function createNamespace () {
   printf "==> Creating namespace $namespace \n"
   # Check if the namespace already exists
   if kubectl get namespace "$namespace" >> /dev/null 2>&1; then
-      echo -e "${RED}Namespace $namespace already exists.${RESET}"
-      exit 1
+      echo -e "${RED}Namespace $namespace already exists -skipping creation.${RESET}"
+      return 0
   fi
 
   # Create the namespace
