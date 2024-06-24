@@ -50,6 +50,8 @@ FIN_NAMESPACE="fineract"
 FIN_RELEASE_NAME="fineract"
 FIN_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/fin_values.yaml"
 
+# Timers
+START_TIME=$(date +%s)
 
 ########################################################################
 # FUNCTIONS FOR CONFIGURATION MANAGEMENT
@@ -135,7 +137,7 @@ function configureMojaloop() {
       old_value=$(echo "$json_object" | jq -r '.old_value')
       new_value=$(echo "$json_object" | jq -r ".new_value")
 
-      # Call the  function with the extracted attributes
+      # Call the function with the extracted attributes
       replaceValuesInFile "$file_name" "$old_value" "$new_value"
   done
 
@@ -200,3 +202,64 @@ function configurePH() {
 function configureFineract(){
   echo -e "${BLUE}Configuring fineract ${RESET}"
 }
+
+########################################################################
+# FUNCTION TO MONITOR DEPLOYMENT
+########################################################################
+function monitorDeployment() {
+  echo -e "${BLUE}Monitoring Deployment ${RESET}"
+
+  echo -e "Waiting for all pods to be in 'Running' state..."
+  start_time=$(date +%s)
+  while true; do
+    not_running_pods=$(kubectl get pods --all-namespaces --field-selector=status.phase!=Running | wc -l)
+    if [ "$not_running_pods" -eq 0 ]; then
+      echo "All pods are in 'Running' state."
+      break
+    fi
+    sleep 5
+  done
+  end_time=$(date +%s)
+  total_time=$((end_time - start_time))
+  echo -e "${GREEN}All pods are in 'Running' state. Total deploy time: ${total_time}s${RESET}"
+}
+
+########################################################################
+# FUNCTION TO CHECK MEMORY USAGE
+########################################################################
+function checkMemoryUsage() {
+  echo -e "${BLUE}Checking Memory Usage ${RESET}"
+  kubectl top pods --all-namespaces | awk '
+  NR==1 {print $0} 
+  /mojaloop|paymenthub|fineract/ {print $0}'
+}
+
+########################################################################
+# FUNCTION TO CHECK DISK SPACE USAGE
+########################################################################
+function checkDiskSpaceUsage() {
+  echo -e "${BLUE}Checking Disk Space Usage ${RESET}"
+  df -h | awk 'NR==1 || /\/$/ {print $0}'
+}
+
+########################################################################
+# MAIN EXECUTION
+########################################################################
+
+# Run configuration functions
+configureMojaloop
+configurePH "$PHREPO_DIR"
+configureFineract
+
+# Monitor deployment
+monitorDeployment
+
+# Check memory and disk space usage
+checkMemoryUsage
+checkDiskSpaceUsage
+
+END_TIME=$(date +%s)
+TOTAL_DEPLOY_TIME=$((END_TIME - START_TIME))
+echo -e "${GREEN}Total deployment time: ${TOTAL_DEPLOY_TIME}s${RESET}"
+
+echo -e "${GREEN}Deployment and configuration complete.${RESET}"
