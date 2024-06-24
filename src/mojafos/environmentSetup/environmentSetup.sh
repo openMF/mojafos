@@ -493,6 +493,13 @@ function setup_k8s_cluster {
         fi
 }
 
+function deleteAppResources(){
+    deleteResourcesInNamespsceMatchingPattern "fineract"
+    deleteResourcesInNamespsceMatchingPattern "mojaloop"
+    deleteResourcesInNamespsceMatchingPattern "paymenthub"
+    deleteResourcesInNamespsceMatchingPattern "infra"
+}
+
 ################################################################################
 # MAIN
 ################################################################################
@@ -558,15 +565,9 @@ function envSetupMain {
         print_end_message
     elif [[ "$mode" == "cleanapps" ]]  ; then
         # remove all apps 
-        deleteResourcesInNamespsceMatchingPattern "fineract"
-        deleteResourcesInNamespsceMatchingPattern "mojaloop"
-        deleteResourcesInNamespsceMatchingPattern "paymenthub"
-        deleteResourcesInNamespsceMatchingPattern "infra"    
+        deleteAppResources   
     elif [[ "$mode" == "cleanall" ]]  ; then
-        deleteResourcesInNamespsceMatchingPattern "fineract"
-        deleteResourcesInNamespsceMatchingPattern "mojaloop"
-        deleteResourcesInNamespsceMatchingPattern "paymenthub"
-        deleteResourcesInNamespsceMatchingPattern "infra"
+        deleteAppResources
         if [[ "$environment" == "local" ]]; then
             echo "Deleting local kubernetes cluster..."
             delete_k8s

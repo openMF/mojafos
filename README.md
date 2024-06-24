@@ -31,7 +31,8 @@ sudo ./run.sh -u $USER -m deploy -d true -a all -f 2 -e local
 - `-u` This is used to pass in the user the script should use to execute it's commands. The value passed in is `$USER` which the current user of the shell
 - `-m` This option specifies the mode in which the script should execute. The available values are 
     - `deploy` - Deploy applications
-    - `cleanup` - Undo what deploy did and clean up resources
+    - `cleanapps` - Undo what deploy did and clean up all application resources without removing kubernetes infrastructure
+    - `cleanall` - Undo what deploy did and clean up all resources including kubernetes infrastructure
 - `-d` This flag tells the sccript whether to execute in verbose mode or not. The available values are :
     - true - Output should provide as much information as possible
     - false - Output should not be minimal
@@ -185,7 +186,7 @@ Note you can only have one host per line so on windows 10 your hosts file should
 To tear down the infrastructure and all installed apps. You can run this command.
 
 ```bash
-sudo ./run.sh -u $USER -m cleanup -d true -e local
+sudo ./run.sh -u $USER -m cleanall -d true -e local
 ```
 
 This will delete all resources in the created namespaces and if the kubernetes cluster is `k3s` it will delete it as well.
