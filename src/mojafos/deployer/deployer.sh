@@ -348,7 +348,7 @@ function deployMojaloop() {
   echo
   cloneRepo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
   echo
-  renameOffToYaml "${MOJALOOP_LAYER_DIRS[0]}"
+  # renameOffToYaml "${MOJALOOP_LAYER_DIRS[0]}"
   echo
   configureMojaloop
 
