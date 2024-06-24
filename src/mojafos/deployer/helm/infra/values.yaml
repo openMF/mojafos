@@ -59,6 +59,21 @@ kafka:
       value: SettlementsBcCommands
     - name: PlatformConfigurationBcEvents
       value: PlatformConfigurationBcEvents
+    - name: TransfersBcTimeouts
+      value: TransfersBcTimeouts
+    - name: ParticipantsBcEvents
+      value: ParticipantsBcEvents
+    - name: SchedulingBcCommands
+      value: SchedulingBcCommands
+    - name: SchedulingBcEvents
+      value: SchedulingBcEvents
+    - name: SecurityBcAuthorizationEvents
+      value: SecurityBcAuthorizationEvents
+    - name: SecurityBcEvents
+      value: SecurityBcEvents
+
+
+
 
     nodeSelector: {}
     tolerations: []
