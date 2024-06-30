@@ -368,6 +368,7 @@ function deployMojaloop() {
       echo -e "Proceeding ..."
     fi
   done
+  setupIngressClass
 
   echo -e "\n${GREEN}============================"
   echo -e "Mojaloop Deployed"
