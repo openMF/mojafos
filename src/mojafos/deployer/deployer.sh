@@ -342,6 +342,12 @@ function postPaymenthubDeploymentScript(){
   runFailedSQLStatements
 }
 
+#Setup ingressClass
+function setupIngressClass() {
+  kubectl apply -f "$BASE_DIR/ingressclass.yaml"
+  kubectl rollout restart deploy/ingress-nginx-controller
+}
+
 function deployMojaloop() {
   echo "Deploying Mojaloop vNext application manifests"
   createNamespace "$MOJALOOP_NAMESPACE"
@@ -362,6 +368,7 @@ function deployMojaloop() {
       echo -e "Proceeding ..."
     fi
   done
+  setupIngressClass
 
   echo -e "\n${GREEN}============================"
   echo -e "Mojaloop Deployed"
