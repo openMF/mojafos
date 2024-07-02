@@ -35,14 +35,14 @@ function set_user {
 function k8s_already_installed {
     if [[ -f "/usr/local/bin/k3s" ]]; then
         printf "** warning k3s is already installed => using existing deployment **\n"
-        return 1
+        return 0
     fi
     #check to ensure microk8s isn't already installed when installing k3s
     if [[ -f "/snap/bin/microk8s" ]]; then
         printf "** warning , microk8s is already installed, using existing deployment  **\n"
-        return 1 
+        return 0 
     fi
-    return 0
+    return 1
 }
 
 function set_linux_os_distro {
@@ -361,7 +361,7 @@ function add_helm_repos {
     su - $k8s_user -c "helm repo add mojaloop http://mojaloop.io/helm/repo/" > /dev/null 2>&1
     su - $k8s_user -c "helm repo add cowboysysop https://cowboysysop.github.io/charts/" > /dev/null 2>&1  # mongo-express
     su - $k8s_user -c "helm repo add redpanda-data https://charts.redpanda.com/ " > /dev/null 2>&1   # kafka console
-    su - $k8s_user -c "helm repo add $PH_CHART_REPO_NAME $PH_HELM_REPO_LINK" > /dev/null 2>&1  #g2p-sandbox 
+    #TDDEBUG su - $k8s_user -c "helm repo add $PH_CHART_REPO_NAME $PH_HELM_REPO_LINK" > /dev/null 2>&1  #g2p-sandbox 
 
     su - $k8s_user -c "helm repo update" > /dev/null 2>&1
 }
@@ -498,6 +498,7 @@ function deleteAppResources(){
     deleteResourcesInNamespsceMatchingPattern "mojaloop"
     deleteResourcesInNamespsceMatchingPattern "paymenthub"
     deleteResourcesInNamespsceMatchingPattern "infra"
+    deleteResourcesInNamespsceMatchingPattern "default"
 }
 
 ################################################################################
@@ -549,16 +550,17 @@ function envSetupMain {
         check_resources_ok
         set_k8s_distro
         set_k8s_version
-        if [[ ! k8s_already_installed ]]; then 
+        if ! k8s_already_installed; then 
             check_os_ok # todo add check to this once tested across other OS's more fully
             install_prerequisites
             add_hosts
             setup_k8s_cluster $k8s_distro $environment
             install_nginx
+            install_k8s_tools
+            add_helm_repos
+            configure_k8s_user_env
         fi 
-        install_k8s_tools
-        add_helm_repos
-        configure_k8s_user_env
+
         check_k8s_installed
         printf "\r==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for mojaloop deployment \n" \
                     "$k8s_distro" "$K8S_VERSION" "$k8s_user"
