@@ -108,22 +108,34 @@ trap "trapCtrlc" 2
 # MAIN
 ###########################################################################
 function main {
-  welcome 
-  getoptions "$@"
-  if [ $mode == "deploy" ]; then
-    echo -e "${YELLOW}"
-    echo -e "===================================================================================="
-    echo -e "The deployment made by this script is meant for demo purposes and not for production"
-    echo -e "===================================================================================="
-    echo -e "${RESET}"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
-    deployApps "$fineract_instansces" "$apps"
-  elif [ $mode == "cleanup" ]; then
-    logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
-  else
-    showUsage
-  fi
+    welcome
+    getoptions "$@"
+
+    if [ "$mode" == "deploy" ]; then
+        echo -e "${YELLOW}"
+        echo -e "===================================================================================="
+        echo -e "The deployment made by this script is meant for demo purposes and not for production"
+        echo -e "===================================================================================="
+        echo -e "${RESET}"
+        envSetupMain "$mode" "k3s" "1.26" "$environment"
+        deployApps "$fineract_instansces" "$apps"
+
+    elif [ "$mode" == "cleanup" ]; then
+        read -p "Are you sure you want to delete all traces of Mojafos? (yes/no): " confirm
+        case $confirm in
+            [Yy][Ee][Ss]|[Yy])
+                log "INFO" "Proceeding with cleanup..."
+                ;;
+            *)
+                log "INFO" "Cleanup aborted."
+                exit 0
+                ;;
+        esac
+        logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
+        envSetupMain "$mode" "k3s" "1.26" "$environment"
+    else
+        showUsage
+    fi
 }
 
 ###########################################################################
