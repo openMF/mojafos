@@ -330,6 +330,10 @@ function install_k8s_tools {
     mv ./kustomize /usr/local/bin > /dev/null 2>&1
 }
 
+function create_ingress_classes {
+    su - $k8s_user -c "kubectl apply -f $(pwd)/$INFRA_DIR/DefaultIngress.yaml"
+}
+
 function add_helm_repos {
     # see readme at https://github.com/mojaloop/helm for required helm libs
     printf "\r==> add the helm repos required to install and run infrastructure for Mojaloop, Paymenthub EE and Fineract\n"
@@ -558,6 +562,7 @@ function envSetupMain {
         add_helm_repos
         configure_k8s_user_env
         check_k8s_installed
+        create_ingress_classes
         printf "\r==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for mojaloop deployment \n" \
                     "$k8s_distro" "$K8S_VERSION" "$k8s_user"
         print_end_message
