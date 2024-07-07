@@ -3,6 +3,7 @@
 ########################################################################
 # GLOBAL VARS
 ########################################################################
+INFRA_DIR="src/mojafos/deployer/helm/infra"
 BASE_DIR=$(pwd)
 APPS_DIR="$BASE_DIR/src/mojafos/deployer/apps/"
 INFRA_NAMESPACE="infra"
