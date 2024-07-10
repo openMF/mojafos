@@ -80,8 +80,7 @@ function getoptions {
 }
 
 # this function is called when Ctrl-C is sent
-function cleanUp ()
-{
+function cleanUp () {
     # perform cleanup here
     echo -e "${RED}Performing graceful clean up${RESET}"
 
@@ -104,6 +103,30 @@ function trapCtrlc {
 # when signal 2 (SIGINT) is received
 trap "trapCtrlc" 2
 
+function getMemoryUsage() {
+  kubectl top pod --all-namespaces | grep -E 'mifos|mojaloop|phee'
+}
+
+function getDiskUsage() {
+  du -sh /var/lib/kubelet/pods
+}
+
+function measureTime() {
+  local start_time=$(date +%s)
+  $@
+  local end_time=$(date +%s)
+  local elapsed=$(( end_time - start_time ))
+  echo "Time taken: $(($elapsed / 60)) minutes and $(($elapsed % 60)) seconds."
+}
+
+function monitorResources() {
+  echo "Memory usage by components:"
+  getMemoryUsage
+
+  echo "Disk usage:"
+  getDiskUsage
+}
+
 ###########################################################################
 # MAIN
 ###########################################################################
@@ -116,11 +139,13 @@ function main {
     echo -e "The deployment made by this script is meant for demo purposes and not for production"
     echo -e "===================================================================================="
     echo -e "${RESET}"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
-    deployApps "$fineract_instansces" "$apps"
+    measureTime envSetupMain "$mode" "k3s" "1.26" "$environment"
+    measureTime deployApps "$fineract_instansces" "$apps"
+    monitorResources
   elif [ $mode == "cleanup" ]; then
     logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
+    measureTime envSetupMain "$mode" "k3s" "1.26" "$environment"
+    monitorResources
   else
     showUsage
   fi
