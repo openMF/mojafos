@@ -112,9 +112,9 @@ function main {
   getoptions "$@"
   if [ $mode == "deploy" ]; then
     echo -e "${YELLOW}"
-    echo -e "===================================================================================="
-    echo -e "The deployment made by this script is meant for demo purposes and not for production"
-    echo -e "===================================================================================="
+    echo -e "======================================================================================================"
+    echo -e "The deployment made by this script is currently suitable only for demo purposes and not for production"
+    echo -e "======================================================================================================"
     echo -e "${RESET}"
     envSetupMain "$mode" "k3s" "1.26" "$environment"
     deployApps "$fineract_instansces" "$apps"

@@ -106,8 +106,9 @@ function deployHelmChartFromDir() {
 
 function preparePaymentHubChart(){
   # Clone the repositories
-  #echo "TDDBUG> clonerepo $PH_EE_ENV_LABS_REPO_BRANCH $PH_EE_ENV_LABS_REPO_LINK $APPS_DIR $PH_EE_ENV_LABS_REPO_DIR"
+  #echo "TDDBUG> currently NOT doing clonerepo $PH_EE_ENV_LABS_REPO_BRANCH $PH_EE_ENV_LABS_REPO_LINK $APPS_DIR $PH_EE_ENV_LABS_REPO_DIR"
   #cloneRepo "$PH_EE_ENV_LABS_REPO_BRANCH" "$PH_EE_ENV_LABS_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_LABS_REPO_DIR"
+  echo "TDDEBUG> Cloning PHEE Templates repo Gazell branch"
   echo "TDDBUG> clonerepo $PH_EE_ENV_TEMPLATE_REPO_BRANCH $PH_EE_ENV_TEMPLATE_REPO_LINK $APPS_DIR $PH_EE_ENV_TEMPLATE_REPO_DIR"
   cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
 
@@ -121,26 +122,23 @@ function preparePaymentHubChart(){
   #popd
   echo "TDDEBUG done running helm dep update on ph-ee-engine in template dir"
 
-  # TEMPLATE => Update helm dependencies and repo index for g2p-sandbox in ph-ee-env-template
-  echo "TDDEBUG about to run helm dep update on template dir g2p-sandbox"
-  g2pSandboxChartPath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/g2p-sandbox"
-  awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$g2pSandboxChartPath/Chart.yaml" > "$g2pSandboxChartPath/Chart.yaml.tmp" && mv "$g2pSandboxChartPath/Chart.yaml.tmp" "$g2pSandboxChartPath/Chart.yaml"
-  #pushd "$g2pSandboxChartPath"
-  su - $k8s_user -c "cd $g2pSandboxChartPath ; helm dep update" 
-  su - $k8s_user -c "cd $g2pSandboxChartPath ; helm repo index ."
-  echo "TDDEBUG done dep update on template dir g2p-sandbox, `pwd`"
-  #popd
+  # TEMPLATE => Update helm dependencies and repo index for gazelle chart in ph-ee-env-template repo 
+  echo "TDDEBUG about to run helm dep update on gazelle chart"
+  gazelleChartPath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/gazelle"
+  #awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$gazelleChartPath/Chart.yaml" > "$gazelleChartPath/Chart.yaml.tmp" && mv "$gazelleChartPath/Chart.yaml.tmp" "$gazelleChartPath/Chart.yaml"
+  #pushd "$gazelleChartPath"
+  su - $k8s_user -c "cd $gazelleChartPath ; helm dep update" 
+  su - $k8s_user -c "cd $gazelleChartPath ; helm repo index ."
+  echo "TDDEBUG done dep update on gazelle chart, `pwd`"
 
-  # # PHEE-LABS Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
+  # PHEE-LABS Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
   # g2pSandboxFinalChartPath="$APPS_DIR$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
   # awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
   # #awk '/name: ph-ee-g2psandbox/{f=1} f&&/version:/{$2="\"1.5.0\""; f=0} 1' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
   # awk '/name: ph-ee-g2psandbox/{f=1} f&&/version:/{match($0, /^[[:space:]]*/); spaces=substr($0, RSTART, RLENGTH); $0=spaces"version: \"1.5.0\""; f=0} 1' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
-  # #pushd "$g2pSandboxFinalChartPath"
   # echo "TDDEBUG about to run helm dep update on labs dir g2p-sandbox-fynarfin-SIT"
   # su - $k8s_user -c "cd $g2pSandboxFinalChartPath ; helm dep update "
   # su - $k8s_user -c "cd $g2pSandboxFinalChartPath ; helm repo index ."
-  # # #popd
 }
 
 function deployPhHelmChartFromDir(){
@@ -161,8 +159,6 @@ function deployPhHelmChartFromDir(){
     exit 1
   fi
 
-
-
   # Install Prometheus Operator as a dependency
   LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
   su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f - "
@@ -170,11 +166,11 @@ function deployPhHelmChartFromDir(){
 
   # Install the Helm chart from the local directory
   if [ -z "$valuesFile" ]; then
-    echo "TDDEBUG> $k8s_user -c helm install $PH_RELEASE_NAME $chartDir -n $namespace"
+    echo "TDDEBUG NO values file > $k8s_user -c helm install $PH_RELEASE_NAME $chartDir -n $namespace"
     su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace"
   else
-    echo "TDDEBUG> $k8s_user -c helm install $PH_RELEASE_NAME $chartDir -n $namespace"
-    su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile"
+    echo "TDDEBUG using values file > $k8s_user -c helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile "
+    su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile --debug "
   fi
 
   # Check deployment status
@@ -248,14 +244,14 @@ function cloneRepo() {
   if [ -d "$target_directory/$cloned_directory_name" ]; then
     echo -e "${YELLOW}$cloned_directory_name Repo exists deleting and re-cloning ${RESET}"
     echo "TDDEBUG going to remove $target_directory/$cloned_directory_name" 
-    rm -rf "$target_directory/$cloned_directory_name"
+    #rm -rf "$target_directory/$cloned_directory_name"
     #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
-    su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
+    #su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
   else
     #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
     echo "td-debug> su - $k8s_user -c git clone -b $branch $repo_link $cloned_directory_name"
     pwd
-    su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
+    #su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
   fi
 
   if [ $? -eq 0 ]; then
@@ -402,7 +398,7 @@ function deployMojaloop() {
 function deployPaymentHubEE() {
   echo "Deploying PaymentHub EE"
   createNamespace "$PH_NAMESPACE"
-  cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
+  #cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
   
   for((i=1; i<=2; i++))
@@ -427,10 +423,11 @@ function deployPH(){
   createNamespace "$PH_NAMESPACE"
   cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
-  deployPhHelmChartFromRepo "$PH_NAMESPACE"
+  #deployPhHelmChartFromRepo "$PH_NAMESPACE"
   preparePaymentHubChart
+  echo "TDDEBUG PHVALUES_FILE = $PH_VALUES_FILE"
   #deployPhHelmChartFromDir "$PH_NAMESPACE" "$g2pSandboxFinalChartPath" "$PH_VALUES_FILE"
-  deployPhHelmChartFromDir "$PH_NAMESPACE" "$g2pSandboxChartPath" "$PH_VALUES_FILE"
+  deployPhHelmChartFromDir "$PH_NAMESPACE" "$gazelleChartPath" "$PH_VALUES_FILE"
   echo -e "\n${GREEN}============================"
   echo -e "Paymenthub Deployed"
   echo -e "============================${RESET}\n"

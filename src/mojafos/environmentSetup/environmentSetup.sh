@@ -560,7 +560,6 @@ function envSetupMain {
             add_helm_repos
             configure_k8s_user_env
         fi 
-
         check_k8s_installed
         printf "\r==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for mojaloop deployment \n" \
                     "$k8s_distro" "$K8S_VERSION" "$k8s_user"
