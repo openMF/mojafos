@@ -1,36 +1,47 @@
 #!/usr/bin/env bash
 
 
-function deleteResourcesInNamespsceMatchingPattern(){
-  local pattern="$1"
-
+function deleteResourcesInNamespaceMatchingPattern() {
+    local pattern="$1"
+    
     # Check if the pattern is provided
     if [ -z "$pattern" ]; then
         echo "Pattern not provided."
-        exit 1
+        return 1
     fi
-
-    # Get the list of namespaces and filter them based on the pattern
-    namespaces=$(kubectl get namespaces -o=name | grep "$pattern")
-    # Loop through the filtered namespaces and delete resources in each one
-    while IFS= read -r namespace; do
+    
+    # Get namespaces matching the pattern
+    local namespaces=$(kubectl get namespaces -o name | grep "$pattern")
+    
+    if [ -z "$namespaces" ]; then
+        echo "No namespaces found matching pattern: $pattern"
+        return 0
+    fi
+    
+    echo "$namespaces" | while read -r namespace; do
         namespace=$(echo "$namespace" | cut -d'/' -f2)
-        kubectl delete all --all -n "$namespace"
-        if [[ $namespace == "default" ]]; then 
-          LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
-          su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl -n default delete -f -" \
-            > /dev/null 2>&1 
-        else 
-          kubectl delete ns $namespace 
-        fi 
-        if [ $? -eq 0 ]; then
-            echo "All resources in namespace $namespace deleted successfully."
+        if [[ $namespace == "default" ]]; then
+            echo "Handling Prometheus Operator resources in default namespace"
+            LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
+            su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl -n default delete -f -" \
+                > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "Prometheus Operator resources in default namespace deleted successfully."
+            else
+                echo "Warning: there was an issue uninstalling  Prometheus Operator resources in default namespace."
+                echo "         you can ignore this if Prometheus was not expected to be already running."
+            fi
         else
-            echo "Error deleting resources in namespace $namespace."
-        fi      
-    done <<< "$namespaces"
-
-
+            echo "Deleting all resources in namespace $namespace"
+            kubectl delete all --all -n "$namespace"
+            kubectl delete ns "$namespace"
+            if [ $? -eq 0 ]; then
+                echo "All resources in namespace $namespace deleted successfully."
+            else
+                echo "Error deleting resources in namespace $namespace."
+            fi
+        fi
+    done
 }
 
 function deployHelmChartFromDir() {
@@ -131,6 +142,7 @@ function preparePaymentHubChart(){
   su - $k8s_user -c "cd $gazelleChartPath ; helm repo index ."
   echo "TDDEBUG done dep update on gazelle chart, `pwd`"
 
+  # TDDEBUG <<<<<<<<<   delete this block after sufficient testing of gazelle
   # PHEE-LABS Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
   # g2pSandboxFinalChartPath="$APPS_DIR$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
   # awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
@@ -139,6 +151,7 @@ function preparePaymentHubChart(){
   # echo "TDDEBUG about to run helm dep update on labs dir g2p-sandbox-fynarfin-SIT"
   # su - $k8s_user -c "cd $g2pSandboxFinalChartPath ; helm dep update "
   # su - $k8s_user -c "cd $g2pSandboxFinalChartPath ; helm repo index ."
+  # >>>>>>>>>>>>>>
 }
 
 function deployPhHelmChartFromDir(){
@@ -162,7 +175,12 @@ function deployPhHelmChartFromDir(){
   # Install Prometheus Operator as a dependency
   LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
   su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f - "
-  echo "**** TDDEBUG> Prometheus should be installed now **** " 
+  if [ $? -eq 0 ]; then
+      echo -e "==> Prometheus installed ok "
+  else
+      echo "Failed to install prometheus"
+      exit 1 
+  fi
 
   # Install the Helm chart from the local directory
   if [ -z "$valuesFile" ]; then

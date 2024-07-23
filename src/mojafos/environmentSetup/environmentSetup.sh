@@ -506,11 +506,11 @@ function setup_k8s_cluster {
 }
 
 function deleteAppResources(){
-    deleteResourcesInNamespsceMatchingPattern "fineract"
-    deleteResourcesInNamespsceMatchingPattern "mojaloop"
-    deleteResourcesInNamespsceMatchingPattern "paymenthub"
-    deleteResourcesInNamespsceMatchingPattern "infra"
-    deleteResourcesInNamespsceMatchingPattern "default"
+    deleteResourcesInNamespaceMatchingPattern "fineract"
+    deleteResourcesInNamespaceMatchingPattern "mojaloop"
+    deleteResourcesInNamespaceMatchingPattern "paymenthub"
+    deleteResourcesInNamespaceMatchingPattern "infra"
+    deleteResourcesInNamespaceMatchingPattern "default"
 }
 
 ################################################################################
