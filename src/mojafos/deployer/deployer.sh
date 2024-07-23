@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 function deleteResourcesInNamespaceMatchingPattern() {
     local pattern="$1"
     
@@ -119,7 +118,7 @@ function preparePaymentHubChart(){
   # Clone the repositories
   #echo "TDDBUG> currently NOT doing clonerepo $PH_EE_ENV_LABS_REPO_BRANCH $PH_EE_ENV_LABS_REPO_LINK $APPS_DIR $PH_EE_ENV_LABS_REPO_DIR"
   #cloneRepo "$PH_EE_ENV_LABS_REPO_BRANCH" "$PH_EE_ENV_LABS_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_LABS_REPO_DIR"
-  echo "TDDEBUG> Cloning PHEE Templates repo Gazell branch"
+  echo "TDDEBUG> Cloning PHEE Templates repo Gazelle branch"
   echo "TDDBUG> clonerepo $PH_EE_ENV_TEMPLATE_REPO_BRANCH $PH_EE_ENV_TEMPLATE_REPO_LINK $APPS_DIR $PH_EE_ENV_TEMPLATE_REPO_DIR"
   cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
 
@@ -260,17 +259,17 @@ function cloneRepo() {
 
   # Clone the repository with the specified branch into the specified directory.
   if [ -d "$target_directory/$cloned_directory_name" ]; then
-    #echo -e "${YELLOW}$cloned_directory_name Repo exists deleting and re-cloning ${RESET}"
-    echo "skipping reclone for now" 
-    #echo "TDDEBUG going to remove $target_directory/$cloned_directory_name" 
-    #rm -rf "$target_directory/$cloned_directory_name"
+    echo -e "${YELLOW}$cloned_directory_name Repo exists deleting and re-cloning ${RESET}"
+    #echo "skipping reclone for now" 
+    echo "TDDEBUG going to remove $target_directory/$cloned_directory_name" 
+    rm -rf "$target_directory/$cloned_directory_name"
     #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
-    #su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
+    su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
   else
     #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
-    echo "td-debug> su - $k8s_user -c git clone -b $branch $repo_link $cloned_directory_name"
+    #echo "td-debug> su - $k8s_user -c git clone -b $branch $repo_link $cloned_directory_name"
     pwd
-    #su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
+    su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
   fi
 
   if [ $? -eq 0 ]; then
@@ -414,33 +413,34 @@ function deployMojaloop() {
   echo -e "============================${RESET}\n"
 }
 
-function deployPaymentHubEE() {
-  echo "Deploying PaymentHub EE"
-  createNamespace "$PH_NAMESPACE"
-  #cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
-  configurePH "$APPS_DIR$PHREPO_DIR/helm"
+# function deployPaymentHubEE() {
+#   echo "Deploying PaymentHub EE"
+#   createNamespace "$PH_NAMESPACE"
+#   #cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
+#   configurePH "$APPS_DIR$PHREPO_DIR/helm"
   
-  for((i=1; i<=2; i++))
-  do
-    if [ "$debug" = true ]; then
-      deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
-    else 
-      deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE" >> /dev/null 2>&1
-    fi
-  done 
+#   for((i=1; i<=2; i++))
+#   do
+#     if [ "$debug" = true ]; then
+#       deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+#     else 
+#       deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE" >> /dev/null 2>&1
+#     fi
+#   done 
 
-  echo -e "\n${YELLOW}Fixing Paymenthub post deployment issues(might take a while)...${RESET}"
-  postPaymenthubDeploymentScript >> /dev/null 2>&1
+#   echo -e "\n${YELLOW}Fixing Paymenthub post deployment issues(might take a while)...${RESET}"
+#   postPaymenthubDeploymentScript >> /dev/null 2>&1
 
-  echo -e "\n${GREEN}============================"
-  echo -e "Paymenthub Deployed"
-  echo -e "============================${RESET}\n"
-}
+#   echo -e "\n${GREEN}============================"
+#   echo -e "Paymenthub Deployed"
+#   echo -e "============================${RESET}\n"
+# }
 
 function deployPH(){
   echo "Deploying PaymentHub EE"
   createNamespace "$PH_NAMESPACE"
   cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
+  echo "TDDEBUG did this repo clone ok ?"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
   #deployPhHelmChartFromRepo "$PH_NAMESPACE"
   preparePaymentHubChart
