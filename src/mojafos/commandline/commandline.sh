@@ -116,14 +116,14 @@ function main {
     echo -e "The deployment made by this script is currently suitable only for demo purposes and not for production"
     echo -e "======================================================================================================"
     echo -e "${RESET}"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
+    envSetupMain "$mode" "k3s" "1.30" "$environment"
     deployApps "$fineract_instansces" "$apps"
   elif [ $mode == "cleanapps" ]; then  
     logWithVerboseCheck $debug info "Cleaning up Mojafos applications only"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
+    envSetupMain "$mode" "k3s" "1.30" "$environment"
   elif [ $mode == "cleanall" ]; then
     logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
+    envSetupMain "$mode" "k3s" "1.30" "$environment"
   else
     showUsage
   fi

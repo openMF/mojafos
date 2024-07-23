@@ -18,7 +18,7 @@ function deleteResourcesInNamespsceMatchingPattern(){
         kubectl delete all --all -n "$namespace"
         if [[ $namespace == "default" ]]; then 
           LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
-          su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl delete -f -" \
+          su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl -n default delete -f -" \
             > /dev/null 2>&1 
         else 
           kubectl delete ns $namespace 
@@ -242,8 +242,9 @@ function cloneRepo() {
 
   # Clone the repository with the specified branch into the specified directory.
   if [ -d "$target_directory/$cloned_directory_name" ]; then
-    echo -e "${YELLOW}$cloned_directory_name Repo exists deleting and re-cloning ${RESET}"
-    echo "TDDEBUG going to remove $target_directory/$cloned_directory_name" 
+    #echo -e "${YELLOW}$cloned_directory_name Repo exists deleting and re-cloning ${RESET}"
+    echo "skipping reclone for now" 
+    #echo "TDDEBUG going to remove $target_directory/$cloned_directory_name" 
     #rm -rf "$target_directory/$cloned_directory_name"
     #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
     #su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
@@ -427,7 +428,7 @@ function deployPH(){
   preparePaymentHubChart
   echo "TDDEBUG PHVALUES_FILE = $PH_VALUES_FILE"
   #deployPhHelmChartFromDir "$PH_NAMESPACE" "$g2pSandboxFinalChartPath" "$PH_VALUES_FILE"
-  deployPhHelmChartFromDir "$PH_NAMESPACE" "$gazelleChartPath" "$PH_VALUES_FILE"
+  deployPhHelmChartFromDir "$PH_NAMESPACE" "$gazelleChartPath" 
   echo -e "\n${GREEN}============================"
   echo -e "Paymenthub Deployed"
   echo -e "============================${RESET}\n"

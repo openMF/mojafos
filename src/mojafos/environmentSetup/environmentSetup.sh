@@ -300,35 +300,49 @@ function do_k3s_install {
     fi
 }
 
-function check_nginx_running { 
-    # Check if the Nginx pod is running
-    if kubectl get pods $nginx_pod_name | grep -q "Running"; then
-        # ok nginx is running 
-        return 0 
-    else
-        # nope it is not running 
-        return 1 
-    fi
-} 
+function check_nginx_running {
+    # Get the first nginx pod name
+    nginx_pod_name=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" | grep nginx | head -n 1)
 
-function install_nginx { 
+    if [ -z "$nginx_pod_name" ]; then
+        # No nginx pod found
+        return 1
+    fi
+    # Check if the Nginx pod is running
+    pod_status=$(kubectl get pod $nginx_pod_name -o jsonpath='{.status.phase}')
+    if [ "$pod_status" == "Running" ]; then
+        # nginx is running
+        return 0
+    else
+        # nginx is not running
+        return 1
+    fi
+}
+
+
+function install_nginx () { 
+    local cluster_type=$1
+    local k8s_distro=$2
     #install nginx
     printf "\r==> installing nginx ingress chart and wait for it to be ready "
-    if [[ check_nginx_running -eq 0 ]]; then 
+    if check_nginx_running; then 
         printf "[ nginx already installed and running ] \n"
         return 0 
     fi 
+    # echo "\n nope cluster is not running"
+    # echo "cluster_type=$cluster_type"
+    # echo "k8s_distro=$k8s_distro"
     if [[ $cluster_type == "local" ]]; then 
         if [[ $k8s_distro == "microk8s" ]]; then 
             microk8s.enable ingress
             printf "[ok]\n"
         else # i.e. k3s 
-            su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx" > /dev/null 2>&1
-            # TODO : check to ensure that the ingress is indeed running
-            nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
-
+            su - $k8s_user -c "helm delete ingress-nginx -n default " > /dev/null 2>&1
+            su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx \
+                              --repo https://kubernetes.github.io/ingress-nginx \
+                              -n default -f $NGINX_VALUES_FILE" > /dev/null 2>&1
             # Check if the Nginx pod is running
-            if [[ check_nginx_running -eq 0 ]]; then 
+            if check_nginx_running; then 
                 printf "[ok]\n"
             else
                 printf "** Error : helm install of nginx seems to have failed , nginx pod is not running  ** \n"
@@ -361,8 +375,6 @@ function add_helm_repos {
     su - $k8s_user -c "helm repo add mojaloop http://mojaloop.io/helm/repo/" > /dev/null 2>&1
     su - $k8s_user -c "helm repo add cowboysysop https://cowboysysop.github.io/charts/" > /dev/null 2>&1  # mongo-express
     su - $k8s_user -c "helm repo add redpanda-data https://charts.redpanda.com/ " > /dev/null 2>&1   # kafka console
-    #TDDEBUG su - $k8s_user -c "helm repo add $PH_CHART_REPO_NAME $PH_HELM_REPO_LINK" > /dev/null 2>&1  #g2p-sandbox 
-
     su - $k8s_user -c "helm repo update" > /dev/null 2>&1
 }
 
@@ -511,7 +523,7 @@ function envSetupMain {
 
     HELM_VERSION="3.12.0"  # Feb 2023
     OS_VERSIONS_LIST=( 20 22 )
-    K8S_CURRENT_RELEASE_LIST=( "1.26" "1.27" )
+    K8S_CURRENT_RELEASE_LIST=( "1.29" "1.30" )
     CURRENT_RELEASE="false"
     k8s_user_home=""
     k8s_arch=`uname -p`  # what arch
@@ -555,11 +567,12 @@ function envSetupMain {
             install_prerequisites
             add_hosts
             setup_k8s_cluster $k8s_distro $environment
-            install_nginx
+            install_nginx $environment $k8s_distro
             install_k8s_tools
             add_helm_repos
             configure_k8s_user_env
-        fi 
+        fi
+        install_nginx $environment $k8s_distro # will skip if already running
         check_k8s_installed
         printf "\r==> kubernetes distro:[%s] version:[%s] is now configured for user [%s] and ready for mojaloop deployment \n" \
                     "$k8s_distro" "$K8S_VERSION" "$k8s_user"

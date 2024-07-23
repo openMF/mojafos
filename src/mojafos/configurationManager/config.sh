@@ -7,6 +7,7 @@ BASE_DIR=$(pwd)
 APPS_DIR="$BASE_DIR/src/mojafos/deployer/apps/"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="mojafos-infra"
+NGINX_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/nginx_values.yaml"
 #mojaloop
 MOJALOOPBRANCH="beta1"
 MOJALOOPREPO_DIR="mojaloop"
