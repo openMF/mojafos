@@ -38,7 +38,7 @@ Options:
 function getoptions {
   local mode_opt
 
-  while getopts "m:n:d:a:f:e:u:hH" OPTION ; do
+  while getopts "m:k:d:a:f:e:u:hH" OPTION ; do
     case "${OPTION}" in
             m)	    mode_opt="${OPTARG}"
             ;;
