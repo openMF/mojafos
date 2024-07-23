@@ -25,55 +25,52 @@ kafka:
     replicationFactor: 1
 
     topics:
-    - name: KAFKA_AUDITS_TOPIC
-      value: audits
-    - name: KAFKA_LOGS_TOPIC
-      value: logs
-    - name: AccountLookupBcRequests
-      value: AccountLookupBcRequests
-    - name: AccountLookupBcEvents
-      value: AccountLookupBcEvents
-    - name: AccountLookupBcResponses
-      value: AccountLookupBcResponses
-    - name: AccountLookupBcErrors
-      value: AccountLookupBcErrors
-    - name: OperatorBcErrors
-      value: OperatorBcErrors
-    - name: QuotingBcErrors
-      value: QuotingBcErrors
-    - name: QuotingBcEvents
-      value: QuotingBcEvents
-    - name: QuotingBcRequests
-      value: QuotingBcRequests
-    - name: SettlementsBcRequests
-      value: SettlementsBcRequests
-    - name: TransfersBcErrors
-      value: TransfersBcErrors
-    - name: TransfersBcEvents
-      value: TransfersBcEvents
-    - name: TransfersBcRequests
-      value: TransfersBcRequests
-    - name: SettlementsBcEvents
-      value: SettlementsBcEvents
-    - name: SettlementsBcCommands
-      value: SettlementsBcCommands
-    - name: PlatformConfigurationBcEvents
-      value: PlatformConfigurationBcEvents
-    - name: TransfersBcTimeouts
-      value: TransfersBcTimeouts
-    - name: ParticipantsBcEvents
-      value: ParticipantsBcEvents
-    - name: SchedulingBcCommands
-      value: SchedulingBcCommands
-    - name: SchedulingBcEvents
-      value: SchedulingBcEvents
-    - name: SecurityBcAuthorizationEvents
-      value: SecurityBcAuthorizationEvents
-    - name: SecurityBcEvents
-      value: SecurityBcEvents
-
-
-
+      - name: KAFKA_AUDITS_TOPIC
+        value: audits
+      - name: KAFKA_LOGS_TOPIC
+        value: logs
+      - name: AccountLookupBcRequests
+        value: AccountLookupBcRequests
+      - name: AccountLookupBcEvents
+        value: AccountLookupBcEvents
+      - name: AccountLookupBcResponses
+        value: AccountLookupBcResponses
+      - name: AccountLookupBcErrors
+        value: AccountLookupBcErrors
+      - name: OperatorBcErrors
+        value: OperatorBcErrors
+      - name: QuotingBcErrors
+        value: QuotingBcErrors
+      - name: QuotingBcEvents
+        value: QuotingBcEvents
+      - name: QuotingBcRequests
+        value: QuotingBcRequests
+      - name: SettlementsBcRequests
+        value: SettlementsBcRequests
+      - name: TransfersBcErrors
+        value: TransfersBcErrors
+      - name: TransfersBcEvents
+        value: TransfersBcEvents
+      - name: TransfersBcRequests
+        value: TransfersBcRequests
+      - name: SettlementsBcEvents
+        value: SettlementsBcEvents
+      - name: SettlementsBcCommands
+        value: SettlementsBcCommands
+      - name: PlatformConfigurationBcEvents
+        value: PlatformConfigurationBcEvents
+      - name: TransfersBcTimeouts
+        value: TransfersBcTimeouts
+      - name: ParticipantsBcEvents
+        value: ParticipantsBcEvents
+      - name: SchedulingBcCommands
+        value: SchedulingBcCommands
+      - name: SchedulingBcEvents
+        value: SchedulingBcEvents
+      - name: SecurityBcAuthorizationEvents
+        value: SecurityBcAuthorizationEvents
+      - name: SecurityBcEvents
+        value: SecurityBcEvents
 
     nodeSelector: {}
     tolerations: []
@@ -116,16 +113,23 @@ mongodb:
     rootUser: root
     rootPassword: mongoDbPas42
     usernames:
-    - 'mojaloop'
+      - 'mojaloop'
     passwords:
-    - 'password'
+      - 'password'
     databases:
-    - 'mlos'
+      - 'mlos'
 
     replicaSetKey: ""
     existingSecret: ""
   persistence:
     enabled: false
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
 
 ############### Mongo Express ####################
 # mongo express config
@@ -140,6 +144,14 @@ mongo-express:
   mongodbEnableAdmin: true
   mongodbAdminPassword: mongoDbPas42
 
+  resources:
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+
 ############### Redis  ####################
 ## Reference: https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml
 redis:
@@ -152,6 +164,13 @@ redis:
     disableCommands: []
     persistence:
       enabled: false
+    resources:
+      limits:
+        cpu: "250m"
+        memory: "512Mi"
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
 
 ############### Elasticsearch and Kibana  ####################
 elasticsearch:
@@ -182,6 +201,14 @@ elasticsearch:
   ingress:
     enabled: true
     # hostname: es01
+
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
 
 ############### MySQL  ####################
 mysql:
@@ -215,3 +242,11 @@ mysql:
       GRANT ALL ON *.* TO 'root'@'%';
       GRANT ALL PRIVILEGES ON `fineract_tenants`.* TO 'mifos';
       GRANT ALL PRIVILEGES ON `fineract_default`.* TO 'mifos';
+
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
