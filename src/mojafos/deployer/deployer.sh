@@ -184,8 +184,6 @@ function deployPhHelmChartFromDir(){
 
   # Check deployment status
   resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
-  exit 1
-
   if [ "$resource_count" -gt 0 ]; then
     echo "Helm chart deployed successfully."
   else
@@ -215,7 +213,6 @@ function createNamespace () {
 function deployInfrastructure () {
   printf "==> Deploying infrastructure \n"
   createNamespace $INFRA_NAMESPACE
-  echo " installing chart RUN_DIR is $RUN_DIR" 
 
   if [ "$debug" = true ]; then
     deployHelmChartFromDir "$RUN_DIR/src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
@@ -470,7 +467,7 @@ function deployFineract() {
     if [ "$debug" = true ]; then
       deployHelmChartFromDir "$APPS_DIR$FIN_REPO_DIR/helm/fineract" "$FIN_NAMESPACE-$i" "$FIN_RELEASE_NAME-$i" "$FIN_VALUES_FILE"
     else 
-      deployHelmChartFromDir "$APPS_DIR$FIN_REPO_DIR/helm/fineract" "$FIN_NAMESPACE-$i" "$FIN_RELEASE_NAME-$i" "$FIN_VALUES_FILE" >> /dev/null 2>&1
+      deployHelmChartFromDir "$APPS_DIR$FIN_REPO_DIR/helm/fineract" "$FIN_NAMESPACE-$i" "$FIN_RELEASE_NAME-$i" "$FIN_VALUES_FILE" 
     fi
 
       echo -e "\n${GREEN}============================"
@@ -506,8 +503,9 @@ function deployApps {
   fin_num_instances="$1"
   appsToDeploy="$2"
 
+  echo "TDDEBUG> fin instances: $fin_num_instances"
+  echo "TDDEBUG > appstodeploy: $fin_num_instances"
   echo "in deployApps RUN_DIR is $RUN_DIR"
-
 
   if [ -z "$appsToDeploy" ]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
