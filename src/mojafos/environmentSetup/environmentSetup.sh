@@ -557,8 +557,8 @@ function envSetupMain {
     verify_user
 
     if [[ "$mode" == "deploy" ]]  ; then
-        BASE_DIR=$( cd $(dirname "$0")/../.. ; pwd )
-        RUN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # the directory that this script is run from
+        #BASE_DIR=$( cd $(dirname "$0")/../.. ; pwd )
+        #RUN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # the directory that this script is run from
         check_resources_ok
         set_k8s_distro
         set_k8s_version

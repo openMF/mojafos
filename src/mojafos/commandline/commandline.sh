@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
-source ./src/mojafos/configurationManager/config.sh
-source ./src/mojafos/environmentSetup/environmentSetup.sh
-source ./src/mojafos/deployer/deployer.sh
+source "$RUN_DIR/src/mojafos/configurationManager/config.sh"
+source "$RUN_DIR/src/mojafos/environmentSetup/environmentSetup.sh"
+source "$RUN_DIR/src/mojafos/deployer/deployer.sh"
+
+echo "in commandline: RUN_DIR is $RUN_DIR"
+
 
 function welcome {
   echo -e "${BLUE}"

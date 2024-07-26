@@ -64,43 +64,35 @@ function deployHelmChartFromDir() {
 
   # Enter the chart directory
   cd "$chart_dir" || exit 1
+  pwd
 
   # Run helm dependency update to fetch dependencies
   echo "Updating Helm chart dependencies..."
-  helm dependency update >> /dev/null 2>&1
+  su - $k8s_user -c "helm dependency update" >> /dev/null 2>&1
   echo -e "==> Helm chart updated"
 
   # Run helm dependency build
   echo "Building Helm chart dependencies..."
-  helm dependency build . >> /dev/null 2>&1
+  su - $k8s_user -c "helm dependency build ."  >> /dev/null 2>&1
   echo -e "==> Helm chart dependencies built"
 
   # Determine whether to install or upgrade the chart also check whether to apply a values file
+  su - $k8s_user -c "helm list -n $namespace"
+  echo "TDDEBUG 1"
   if [ -n "$values_file" ]; then
-    if helm list -n "$namespace" | grep -q "$release_name"; then
-      echo "Upgrading Helm chart..."
-      helm upgrade --install "$release_name" . -n "$namespace" -f "$values_file"
-      echo -e "==> Helm chart upgraded"
-    else
-      echo "Installing Helm chart..."
-      helm install "$release_name" . -n "$namespace" -f "$values_file"
-      echo -e "==> Helm chart installed"
-    fi
+      echo "Installing Helm chart using values: $values_file..."
+      su - $k8s_user -c "helm install $release_name $chart_dir -n $namespace -f $values_file"
   else
-    if helm list -n "$namespace" | grep -q "$release_name"; then
-      echo "Upgrading Helm chart..."
-      helm upgrade --install "$release_name" . -n "$namespace"
-      echo -e "==> Helm chart upgraded"
-    else
-      echo "Installing Helm chart..."
-      helm install "$release_name" . -n "$namespace"
-      echo -e "==> Helm chart installed"
-    fi
+      echo "Installing Helm chart usimg default values file ..."
+      su - $k8s_user -c "helm install $release_name $chart_dir -n $namespace "
   fi
 
-  # Use kubectl to get the resource count in the specified namespace
-  resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
+  # #tomd todo : is the chartt really deployed ok, need a test
+  # echo -e "==> Helm chart installed"
 
+  # Use kubectl to get the resource count in the specified namespace
+  #resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
+  resource_count=$(sudo -u $k8s_user kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
   # Check if the deployment was successful
   if [ $resource_count -gt 0 ]; then
     echo "Helm chart deployed successfully."
@@ -120,7 +112,7 @@ function preparePaymentHubChart(){
   #cloneRepo "$PH_EE_ENV_LABS_REPO_BRANCH" "$PH_EE_ENV_LABS_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_LABS_REPO_DIR"
   echo "TDDEBUG> Cloning PHEE Templates repo Gazelle branch"
   echo "TDDBUG> clonerepo $PH_EE_ENV_TEMPLATE_REPO_BRANCH $PH_EE_ENV_TEMPLATE_REPO_LINK $APPS_DIR $PH_EE_ENV_TEMPLATE_REPO_DIR"
-  cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
+  #cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
 
   # Update helm dependencies and repo index for ph-ee-engine
   phEEenginePath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/ph-ee-engine"
@@ -223,10 +215,12 @@ function createNamespace () {
 function deployInfrastructure () {
   printf "==> Deploying infrastructure \n"
   createNamespace $INFRA_NAMESPACE
+  echo " installing chart RUN_DIR is $RUN_DIR" 
+
   if [ "$debug" = true ]; then
-    deployHelmChartFromDir "./src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    deployHelmChartFromDir "$RUN_DIR/src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
   else 
-    deployHelmChartFromDir "./src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" >> /dev/null 2>&1
+    deployHelmChartFromDir "$RUN_DIR/src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" 
   fi
   echo -e "\n${GREEN}============================"
   echo -e "Infrastructure Deployed"
@@ -511,6 +505,9 @@ function printEndMessage {
 function deployApps {
   fin_num_instances="$1"
   appsToDeploy="$2"
+
+  echo "in deployApps RUN_DIR is $RUN_DIR"
+
 
   if [ -z "$appsToDeploy" ]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"

@@ -4,6 +4,9 @@
 # GLOBAL VARS
 ########################################################################
 BASE_DIR=$(pwd)
+echo "BASE_DIR is $BASE_DIR" 
+echo "in config.sh RUN_DIR is $RUN_DIR"
+
 APPS_DIR="$BASE_DIR/src/mojafos/deployer/apps/"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="mojafos-infra"
