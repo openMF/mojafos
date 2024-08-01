@@ -422,26 +422,24 @@ function deployPH(){
 }
 
 function DeployMifosXfromYaml() {
-  num_instances=$1
-  echo "Deploying Mifos web-app and Fineract via application manifests"
-  createNamespace "$FIN_NAMESPACE-$1"
-  echo
+  manifests_dir=$1
+  num_instances=$2
+  # TODO re implement multiple instances of MifosX deployment in different 
+  #      namespaces. In the move away from the helm charts to the simple yamls 
+  #      I (Tom D) temporarily hardcoded this just so we could get something working
+  #      NOTE: MifosX i.e. web-app + fineract could easily be deoloyed from a 
+  #            kubernetes operator and thus multiple deployments would be a simple
+  #            part of that process. 
+  echo "Deploying MifosX i.e. web-app and Fineract via application manifests"
+  createNamespace "$FIN_NAMESPACE-$2"
+  #echo
   #cloneRepo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
-  echo
-  # renameOffToYaml "${MOJALOOP_LAYER_DIRS[0]}"
-  echo
-  #configureMojaloop
+  # TD: ideally the application manifests should be maintained in a Mifos repo 
+  #     seperate from mifos-gazelle (mifosx-docker?) , this might also 
+  #     bve the correct location for a potential k8s operator too.
 
-  #for index in ~/gazelle-mifosx ; do
-  folder="/home/azureuser/gazelle-mifosx"
-  echo "Deploying files in $folder"
-  applyKubeManifests "$folder" "$FIN_NAMESPACE-$1"
-    # if [ "$index" -eq 0 ]; then
-    #   echo -e "${BLUE}Waiting for Mojaloop cross cutting concerns to come up${RESET}"
-    #   sleep 10
-    #   echo -e "Proceeding ..."
-    # fi
-  #done
+  echo "Deploying files in $manifests_dir"
+  applyKubeManifests "$manifests_dir" "$FIN_NAMESPACE-$2"
 } 
 
 function deployFineract() {
@@ -513,19 +511,21 @@ function deployApps {
     deployInfrastructure
     deployMojaloop
     deployPH
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
     #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "all" ]]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
     deployInfrastructure
     deployMojaloop
     deployPH
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
     #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "moja" ]];then
     deployInfrastructure
     deployMojaloop
   elif [[ "$appsToDeploy" == "fin" ]]; then 
     deployInfrastructure
-    DeployMifosXfromYaml "$fin_num_instances"
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
     #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "ph" ]]; then
     deployPH
@@ -535,6 +535,7 @@ function deployApps {
     deployInfrastructure
     deployMojaloop
     deployPH
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
     #deployFineract "$fin_num_instances"
   fi
   addKubeConfig >> /dev/null 2>&1

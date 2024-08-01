@@ -25,7 +25,7 @@ git clone https://github.com/openMF/mojafos.git
 Inside the directory run the following command to execute the script.
 
 ```bash
-sudo ./run.sh -u $USER -m deploy -d true -a all -f 2 -e local
+sudo ./run.sh -u $USER -m deploy -d true -a all -f 1 -e local
 ```
 ### Options
 - `-u` This is used to pass in the user the script should use to execute it's commands. The value passed in is `$USER` which the current user of the shell
@@ -91,7 +91,7 @@ ensure that http / port 80 is accessible on the install system. For instance if 
 add the hosts listed below to an entry for the external/public ip address of that install system in the /etc/hosts file of the laptop you are using.
 For example if Mojaloop vNext is installed on a cloud VM with a public IP of 192.168.56.100 Then add an entry to your laptop's /etc/hosts similar to ...
 ```bash
-192.168.56.100  vnextadmin.local elasticsearch.local kibana.local mongoexpress.local kafkaconsole.local fspiop.local bluebank.local greenbank.local
+192.168.56.100  vnextadmin.local elasticsearch.local kibana.local mongoexpress.local kafkaconsole.local fspiop.local bluebank.local greenbank.local mifos.local 
 ```
 
 You should now be able to browse or curl to Mojaloop vNext admin url using http://vnextadmin you can also access the deloyed instances of the Mojaloop testing toolkit at http://bluebank.local and http://greenbank.local or access the mongo and kafka consoles.
