@@ -289,7 +289,8 @@ function applyKubeManifests() {
     fi
 
     # Use 'kubectl apply' to apply manifests in the specified directory.
-    kubectl apply -f "$directory" -n "$namespace" >> /dev/null 2>&1
+    #su - $k8s_user -c "kubectl apply -f $directory -n $namespace"  >> /dev/null 2>&1
+    su - $k8s_user -c "kubectl apply -f $directory -n $namespace"  
 
     if [ $? -eq 0 ]; then
         echo -e "==>Kubernetes manifests applied successfully."
@@ -404,29 +405,6 @@ function deployMojaloop() {
   echo -e "============================${RESET}\n"
 }
 
-# function deployPaymentHubEE() {
-#   echo "Deploying PaymentHub EE"
-#   createNamespace "$PH_NAMESPACE"
-#   #cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
-#   configurePH "$APPS_DIR$PHREPO_DIR/helm"
-  
-#   for((i=1; i<=2; i++))
-#   do
-#     if [ "$debug" = true ]; then
-#       deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
-#     else 
-#       deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE" >> /dev/null 2>&1
-#     fi
-#   done 
-
-#   echo -e "\n${YELLOW}Fixing Paymenthub post deployment issues(might take a while)...${RESET}"
-#   postPaymenthubDeploymentScript >> /dev/null 2>&1
-
-#   echo -e "\n${GREEN}============================"
-#   echo -e "Paymenthub Deployed"
-#   echo -e "============================${RESET}\n"
-# }
-
 function deployPH(){
   echo "Deploying PaymentHub EE"
   createNamespace "$PH_NAMESPACE"
@@ -443,10 +421,33 @@ function deployPH(){
   echo -e "============================${RESET}\n"
 }
 
+function DeployMifosXfromYaml() {
+  num_instances=$1
+  echo "Deploying Mifos web-app and Fineract via application manifests"
+  createNamespace "$FIN_NAMESPACE-$1"
+  echo
+  #cloneRepo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
+  echo
+  # renameOffToYaml "${MOJALOOP_LAYER_DIRS[0]}"
+  echo
+  #configureMojaloop
+
+  #for index in ~/gazelle-mifosx ; do
+  folder="/home/azureuser/gazelle-mifosx"
+  echo "Deploying files in $folder"
+  applyKubeManifests "$folder" "$FIN_NAMESPACE-$1"
+    # if [ "$index" -eq 0 ]; then
+    #   echo -e "${BLUE}Waiting for Mojaloop cross cutting concerns to come up${RESET}"
+    #   sleep 10
+    #   echo -e "Proceeding ..."
+    # fi
+  #done
+} 
+
 function deployFineract() {
   echo -e "${BLUE}Deploying Fineract${RESET}"
 
-  cloneRepo "$FIN_BRANCH" "$FIN_REPO_LINK" "$APPS_DIR" "$FIN_REPO_DIR"
+  #cloneRepo "$FIN_BRANCH" "$FIN_REPO_LINK" "$APPS_DIR" "$FIN_REPO_DIR"
   configureFineract
 
   num_instances=$1
@@ -512,19 +513,20 @@ function deployApps {
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "all" ]]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "moja" ]];then
     deployInfrastructure
     deployMojaloop
   elif [[ "$appsToDeploy" == "fin" ]]; then 
     deployInfrastructure
-    deployFineract "$fin_num_instances"
+    DeployMifosXfromYaml "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "ph" ]]; then
     deployPH
   else 
@@ -533,7 +535,7 @@ function deployApps {
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   fi
   addKubeConfig >> /dev/null 2>&1
   printEndMessage

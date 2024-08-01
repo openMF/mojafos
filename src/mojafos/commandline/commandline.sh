@@ -39,48 +39,38 @@ Options:
 }
 
 function getoptions {
-  local mode_opt
-
-  while getopts "m:n:d:a:f:e:u:hH" OPTION ; do
-    case "${OPTION}" in
-            m)	    mode_opt="${OPTARG}"
-            ;;
-            k)      k8s_distro="${OPTARG}"
-            ;;
-            d)      debug="${OPTARG}"
-            ;;
-            a)      apps="${OPTARG}"
-            ;;
-            f)      fineract_instansces="${OPTARG}"
-            ;;
-            e)      environment="${OPTARG}"
-            ;;
-            v)	    k8s_user_version="${OPTARG}"
-            ;;
-            u)      k8s_user="${OPTARG}"
-            ;;
-            h|H)	showUsage
-                    exit 0
-            ;;
-            *)	echo  "unknown option"
-                    showUsage
-                    exit 1
-            ;;
+    local mode_opt
+    while getopts "m:k:da:f:e:v:u:hH" OPTION ; do
+        case "${OPTION}" in
+            m) mode_opt="${OPTARG}" ;;
+            k) k8s_distro="${OPTARG}" ;;
+            d) debug="${OPTARG}" ;;
+            a) apps="${OPTARG}" ;;
+            f) fineract_instances="${OPTARG}" ;;
+            e) environment="${OPTARG}" ;;
+            v) k8s_user_version="${OPTARG}" ;;
+            u) k8s_user="${OPTARG}" ;;
+            h|H) showUsage
+                 exit 0 ;;
+            *) echo "unknown option"
+               showUsage
+               exit 1 ;;
         esac
     done
 
-  if [ -z "$mode_opt" ]; then
-    echo "Error: Mode argument is required."
-    showUsage
-    exit 1
-  fi
+    if [ -z "$mode_opt" ]; then
+      echo "Error: Mode argument is required."
+      showUsage
+      exit 1
+    fi
 
-  if [ -z "$debug" ]; then
-    debug=false
-  fi
+    if [ -z "$debug" ]; then
+      debug=false
+    fi
 
-  mode="$mode_opt"
+    mode="$mode_opt"
 }
+
 
 # this function is called when Ctrl-C is sent
 function cleanUp ()
@@ -113,6 +103,9 @@ trap "trapCtrlc" 2
 function main {
   welcome 
   getoptions "$@"
+  echo "APPS=$apps"
+  echo "fineract_instances=$fineract_instances"
+
   if [ $mode == "deploy" ]; then
     echo -e "${YELLOW}"
     echo -e "======================================================================================================"
@@ -120,7 +113,8 @@ function main {
     echo -e "======================================================================================================"
     echo -e "${RESET}"
     envSetupMain "$mode" "k3s" "1.30" "$environment"
-    deployApps "$fineract_instansces" "$apps"
+    echo "deployApps $fineract_instances $apps"
+    deployApps "$fineract_instances" "$apps"
   elif [ $mode == "cleanapps" ]; then  
     logWithVerboseCheck $debug info "Cleaning up Mojafos applications only"
     envSetupMain "$mode" "k3s" "1.30" "$environment"

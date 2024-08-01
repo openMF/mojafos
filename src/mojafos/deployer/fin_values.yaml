@@ -30,7 +30,7 @@ fineract:
       cpu: "1000m"
       memory: "2Gi"
     requests:
-      cpu: "1m"
+      cpu: "100m"
       memory: "100m"
 
 communityapp:
@@ -104,8 +104,8 @@ mysql:
   primary:
     resources:
       requests:
-        memory: "500m"
-        cpu: "500m"
+        memory: "100m"
+        cpu: "100m"
       limits:
         memory: "2Gi"
         cpu: "1000m"
