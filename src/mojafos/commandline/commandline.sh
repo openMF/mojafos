@@ -55,6 +55,7 @@ function getoptions {
             *) echo "unknown option"
                showUsage
                exit 1 ;;
+
         esac
     done
 

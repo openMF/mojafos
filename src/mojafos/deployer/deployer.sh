@@ -210,6 +210,8 @@ function createNamespace () {
   fi
 }
 
+
+
 function deployInfrastructure () {
   printf "==> Deploying infrastructure \n"
   createNamespace $INFRA_NAMESPACE

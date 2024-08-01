@@ -3,6 +3,7 @@
 ########################################################################
 # GLOBAL VARS
 ########################################################################
+INFRA_DIR="src/mojafos/deployer/helm/infra"
 BASE_DIR=$(pwd)
 echo "BASE_DIR is $BASE_DIR" 
 echo "in config.sh RUN_DIR is $RUN_DIR"
