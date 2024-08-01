@@ -1,28 +1,46 @@
 #!/usr/bin/env bash
 
-
-function deleteResourcesInNamespsceMatchingPattern(){
-  local pattern="$1"
-
+function deleteResourcesInNamespaceMatchingPattern() {
+    local pattern="$1"
+    
     # Check if the pattern is provided
     if [ -z "$pattern" ]; then
         echo "Pattern not provided."
-        exit 1
+        return 1
     fi
-
-    # Get the list of namespaces and filter them based on the pattern
-    namespaces=$(kubectl get namespaces -o=name | grep "$pattern")
-
-    # Loop through the filtered namespaces and delete resources in each one
-    while IFS= read -r namespace; do
+    
+    # Get namespaces matching the pattern
+    local namespaces=$(kubectl get namespaces -o name | grep "$pattern")
+    
+    if [ -z "$namespaces" ]; then
+        echo "No namespaces found matching pattern: $pattern"
+        return 0
+    fi
+    
+    echo "$namespaces" | while read -r namespace; do
         namespace=$(echo "$namespace" | cut -d'/' -f2)
-        kubectl delete all --all -n "$namespace"
-        if [ $? -eq 0 ]; then
-            echo "All resources in namespace $namespace deleted successfully."
+        if [[ $namespace == "default" ]]; then
+            echo "Handling Prometheus Operator resources in default namespace"
+            LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
+            su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl -n default delete -f -" \
+                > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "Prometheus Operator resources in default namespace deleted successfully."
+            else
+                echo "Warning: there was an issue uninstalling  Prometheus Operator resources in default namespace."
+                echo "         you can ignore this if Prometheus was not expected to be already running."
+            fi
         else
-            echo "Error deleting resources in namespace $namespace."
+            echo "Deleting all resources in namespace $namespace"
+            kubectl delete all --all -n "$namespace"
+            kubectl delete ns "$namespace"
+            if [ $? -eq 0 ]; then
+                echo "All resources in namespace $namespace deleted successfully."
+            else
+                echo "Error deleting resources in namespace $namespace."
+            fi
         fi
-    done <<< "$namespaces"
+    done
 }
 
 function deployHelmChartFromDir() {
@@ -46,43 +64,35 @@ function deployHelmChartFromDir() {
 
   # Enter the chart directory
   cd "$chart_dir" || exit 1
+  pwd
 
   # Run helm dependency update to fetch dependencies
   echo "Updating Helm chart dependencies..."
-  helm dependency update >> /dev/null 2>&1
+  su - $k8s_user -c "helm dependency update" >> /dev/null 2>&1
   echo -e "==> Helm chart updated"
 
   # Run helm dependency build
   echo "Building Helm chart dependencies..."
-  helm dependency build . >> /dev/null 2>&1
+  su - $k8s_user -c "helm dependency build ."  >> /dev/null 2>&1
   echo -e "==> Helm chart dependencies built"
 
   # Determine whether to install or upgrade the chart also check whether to apply a values file
+  su - $k8s_user -c "helm list -n $namespace"
+  echo "TDDEBUG 1"
   if [ -n "$values_file" ]; then
-    if helm list -n "$namespace" | grep -q "$release_name"; then
-      echo "Upgrading Helm chart..."
-      helm upgrade --install "$release_name" . -n "$namespace" -f "$values_file"
-      echo -e "==> Helm chart upgraded"
-    else
-      echo "Installing Helm chart..."
-      helm install "$release_name" . -n "$namespace" -f "$values_file"
-      echo -e "==> Helm chart installed"
-    fi
+      echo "Installing Helm chart using values: $values_file..."
+      su - $k8s_user -c "helm install $release_name $chart_dir -n $namespace -f $values_file"
   else
-    if helm list -n "$namespace" | grep -q "$release_name"; then
-      echo "Upgrading Helm chart..."
-      helm upgrade --install "$release_name" . -n "$namespace"
-      echo -e "==> Helm chart upgraded"
-    else
-      echo "Installing Helm chart..."
-      helm install "$release_name" . -n "$namespace"
-      echo -e "==> Helm chart installed"
-    fi
+      echo "Installing Helm chart usimg default values file ..."
+      su - $k8s_user -c "helm install $release_name $chart_dir -n $namespace "
   fi
 
-  # Use kubectl to get the resource count in the specified namespace
-  resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
+  # #tomd todo : is the chartt really deployed ok, need a test
+  # echo -e "==> Helm chart installed"
 
+  # Use kubectl to get the resource count in the specified namespace
+  #resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
+  resource_count=$(sudo -u $k8s_user kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
   # Check if the deployment was successful
   if [ $resource_count -gt 0 ]; then
     echo "Helm chart deployed successfully."
@@ -98,31 +108,41 @@ function deployHelmChartFromDir() {
 
 function preparePaymentHubChart(){
   # Clone the repositories
-  cloneRepo "$PH_EE_ENV_LABS_REPO_BRANCH" "$PH_EE_ENV_LABS_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_LABS_REPO_DIR"
-  cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
+  #echo "TDDBUG> currently NOT doing clonerepo $PH_EE_ENV_LABS_REPO_BRANCH $PH_EE_ENV_LABS_REPO_LINK $APPS_DIR $PH_EE_ENV_LABS_REPO_DIR"
+  #cloneRepo "$PH_EE_ENV_LABS_REPO_BRANCH" "$PH_EE_ENV_LABS_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_LABS_REPO_DIR"
+  echo "TDDEBUG> Cloning PHEE Templates repo Gazelle branch"
+  echo "TDDBUG> clonerepo $PH_EE_ENV_TEMPLATE_REPO_BRANCH $PH_EE_ENV_TEMPLATE_REPO_LINK $APPS_DIR $PH_EE_ENV_TEMPLATE_REPO_DIR"
+  #cloneRepo "$PH_EE_ENV_TEMPLATE_REPO_BRANCH" "$PH_EE_ENV_TEMPLATE_REPO_LINK" "$APPS_DIR" "$PH_EE_ENV_TEMPLATE_REPO_DIR"
 
   # Update helm dependencies and repo index for ph-ee-engine
   phEEenginePath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/ph-ee-engine"
-  pushd "$phEEenginePath"
-  helm dep update 
-  helm repo index .
-  popd
+  #pushd "$phEEenginePath"
+  echo "TDDEBUG about to run helm dep update on ph-ee-engine in template dir"
+  su - $k8s_user -c "cd $phEEenginePath;  helm dep update" 
+  su - $k8s_user -c "cd $phEEenginePath;  helm repo index ."
+  echo "TDDEBUG working dir is : `pwd`"
+  #popd
+  echo "TDDEBUG done running helm dep update on ph-ee-engine in template dir"
 
-  # Update helm dependencies and repo index for g2p-sandbox in ph-ee-env-template
-  g2pSandboxChartPath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/g2p-sandbox"
-  awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$g2pSandboxChartPath/Chart.yaml" > "$g2pSandboxChartPath/Chart.yaml.tmp" && mv "$g2pSandboxChartPath/Chart.yaml.tmp" "$g2pSandboxChartPath/Chart.yaml"
-  pushd "$g2pSandboxChartPath"
-  helm dep update 
-  helm repo index .
-  popd
+  # TEMPLATE => Update helm dependencies and repo index for gazelle chart in ph-ee-env-template repo 
+  echo "TDDEBUG about to run helm dep update on gazelle chart"
+  gazelleChartPath="$APPS_DIR$PH_EE_ENV_TEMPLATE_REPO_DIR/helm/gazelle"
+  #awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../ph-ee-engine"); c++} {print}' "$gazelleChartPath/Chart.yaml" > "$gazelleChartPath/Chart.yaml.tmp" && mv "$gazelleChartPath/Chart.yaml.tmp" "$gazelleChartPath/Chart.yaml"
+  #pushd "$gazelleChartPath"
+  su - $k8s_user -c "cd $gazelleChartPath ; helm dep update" 
+  su - $k8s_user -c "cd $gazelleChartPath ; helm repo index ."
+  echo "TDDEBUG done dep update on gazelle chart, `pwd`"
 
-  # Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
-  g2pSandboxFinalChartPath="$APPS_DIR$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
-  awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
-  pushd "$g2pSandboxFinalChartPath"
-  helm dep update 
-  helm repo index .
-  popd
+  # TDDEBUG <<<<<<<<<   delete this block after sufficient testing of gazelle
+  # PHEE-LABS Update helm dependencies and repo index for g2p-sandbox-fynarfin-SIT in ph-ee-env-labs
+  # g2pSandboxFinalChartPath="$APPS_DIR$PH_EE_ENV_LABS_REPO_DIR/helm/g2p-sandbox-fynarfin-SIT"
+  # awk '/repository:/ && c == 0 {sub(/repository: .*/, "repository: file://../../../'$PH_EE_ENV_TEMPLATE_REPO_DIR'/helm/g2p-sandbox"); c++} {print}' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
+  # #awk '/name: ph-ee-g2psandbox/{f=1} f&&/version:/{$2="\"1.5.0\""; f=0} 1' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
+  # awk '/name: ph-ee-g2psandbox/{f=1} f&&/version:/{match($0, /^[[:space:]]*/); spaces=substr($0, RSTART, RLENGTH); $0=spaces"version: \"1.5.0\""; f=0} 1' "$g2pSandboxFinalChartPath/Chart.yaml" > "$g2pSandboxFinalChartPath/Chart.yaml.tmp" && mv "$g2pSandboxFinalChartPath/Chart.yaml.tmp" "$g2pSandboxFinalChartPath/Chart.yaml"
+  # echo "TDDEBUG about to run helm dep update on labs dir g2p-sandbox-fynarfin-SIT"
+  # su - $k8s_user -c "cd $g2pSandboxFinalChartPath ; helm dep update "
+  # su - $k8s_user -c "cd $g2pSandboxFinalChartPath ; helm repo index ."
+  # >>>>>>>>>>>>>>
 }
 
 function deployPhHelmChartFromDir(){
@@ -145,18 +165,25 @@ function deployPhHelmChartFromDir(){
 
   # Install Prometheus Operator as a dependency
   LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
-  su - "$k8s_user" -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
+  su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f - "
+  if [ $? -eq 0 ]; then
+      echo -e "==> Prometheus installed ok "
+  else
+      echo "Failed to install prometheus"
+      exit 1 
+  fi
 
   # Install the Helm chart from the local directory
   if [ -z "$valuesFile" ]; then
+    echo "TDDEBUG NO values file > $k8s_user -c helm install $PH_RELEASE_NAME $chartDir -n $namespace"
     su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace"
   else
-    su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile"
+    echo "TDDEBUG using values file > $k8s_user -c helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile "
+    su - "$k8s_user" -c "helm install $PH_RELEASE_NAME $chartDir -n $namespace -f $valuesFile --debug "
   fi
 
   # Check deployment status
   resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
-
   if [ "$resource_count" -gt 0 ]; then
     echo "Helm chart deployed successfully."
   else
@@ -170,8 +197,8 @@ function createNamespace () {
   printf "==> Creating namespace $namespace \n"
   # Check if the namespace already exists
   if kubectl get namespace "$namespace" >> /dev/null 2>&1; then
-      echo -e "${RED}Namespace $namespace already exists.${RESET}"
-      exit 1
+      echo -e "${RED}Namespace $namespace already exists -skipping creation.${RESET}"
+      return 0
   fi
 
   # Create the namespace
@@ -188,10 +215,11 @@ function createNamespace () {
 function deployInfrastructure () {
   printf "==> Deploying infrastructure \n"
   createNamespace $INFRA_NAMESPACE
+
   if [ "$debug" = true ]; then
-    deployHelmChartFromDir "./src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    deployHelmChartFromDir "$RUN_DIR/src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
   else 
-    deployHelmChartFromDir "./src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" >> /dev/null 2>&1
+    deployHelmChartFromDir "$RUN_DIR/src/mojafos/deployer/helm/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" 
   fi
   echo -e "\n${GREEN}============================"
   echo -e "Infrastructure Deployed"
@@ -216,17 +244,25 @@ function cloneRepo() {
   if [ ! -d "$target_directory" ]; then
       mkdir -p "$target_directory"
   fi
-
+  chown -R $k8s_user "$target_directory"
+  
   # Change to the target directory.
-  cd "$target_directory" || return 1
+  # echo " TDDEBUG: cd to $target_directory" 
+  # cd "$target_directory" || return 1
 
   # Clone the repository with the specified branch into the specified directory.
-  if [ -d "$cloned_directory_name" ]; then
+  if [ -d "$target_directory/$cloned_directory_name" ]; then
     echo -e "${YELLOW}$cloned_directory_name Repo exists deleting and re-cloning ${RESET}"
-    rm -rf "$cloned_directory_name"
-    git clone -b "$branch" "$repo_link" "$cloned_directory_name" >> /dev/null 2>&1
+    #echo "skipping reclone for now" 
+    echo "TDDEBUG going to remove $target_directory/$cloned_directory_name" 
+    rm -rf "$target_directory/$cloned_directory_name"
+    #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
+    su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
   else
-    git clone -b "$branch" "$repo_link" "$cloned_directory_name" >> /dev/null 2>&1
+    #su - $k8s_user -c "git clone -b $branch $repo_link $cloned_directory_name" >> /dev/null 2>&1
+    #echo "td-debug> su - $k8s_user -c git clone -b $branch $repo_link $cloned_directory_name"
+    pwd
+    su - $k8s_user -c "git clone -b $branch $repo_link $target_directory/$cloned_directory_name" 
   fi
 
   if [ $? -eq 0 ]; then
@@ -255,7 +291,8 @@ function applyKubeManifests() {
     fi
 
     # Use 'kubectl apply' to apply manifests in the specified directory.
-    kubectl apply -f "$directory" -n "$namespace" >> /dev/null 2>&1
+    #su - $k8s_user -c "kubectl apply -f $directory -n $namespace"  >> /dev/null 2>&1
+    su - $k8s_user -c "kubectl apply -f $directory -n $namespace"  
 
     if [ $? -eq 0 ]; then
         echo -e "==>Kubernetes manifests applied successfully."
@@ -370,47 +407,47 @@ function deployMojaloop() {
   echo -e "============================${RESET}\n"
 }
 
-function deployPaymentHubEE() {
-  echo "Deploying PaymentHub EE"
-  createNamespace "$PH_NAMESPACE"
-  cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
-  configurePH "$APPS_DIR$PHREPO_DIR/helm"
-  
-  for((i=1; i<=2; i++))
-  do
-    if [ "$debug" = true ]; then
-      deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
-    else 
-      deployHelmChartFromDir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE" >> /dev/null 2>&1
-    fi
-  done 
-
-  echo -e "\n${YELLOW}Fixing Paymenthub post deployment issues(might take a while)...${RESET}"
-  postPaymenthubDeploymentScript >> /dev/null 2>&1
-
-  echo -e "\n${GREEN}============================"
-  echo -e "Paymenthub Deployed"
-  echo -e "============================${RESET}\n"
-}
-
 function deployPH(){
   echo "Deploying PaymentHub EE"
   createNamespace "$PH_NAMESPACE"
   cloneRepo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
+  echo "TDDEBUG did this repo clone ok ?"
   configurePH "$APPS_DIR$PHREPO_DIR/helm"
-  # deployPhHelmChartFromRepo "$PH_NAMESPACE"
+  #deployPhHelmChartFromRepo "$PH_NAMESPACE"
   preparePaymentHubChart
-  deployPhHelmChartFromDir "$PH_NAMESPACE" "$g2pSandboxFinalChartPath" "$PH_VALUES_FILE"
-
+  echo "TDDEBUG PHVALUES_FILE = $PH_VALUES_FILE"
+  #deployPhHelmChartFromDir "$PH_NAMESPACE" "$g2pSandboxFinalChartPath" "$PH_VALUES_FILE"
+  deployPhHelmChartFromDir "$PH_NAMESPACE" "$gazelleChartPath" 
   echo -e "\n${GREEN}============================"
   echo -e "Paymenthub Deployed"
   echo -e "============================${RESET}\n"
 }
 
+function DeployMifosXfromYaml() {
+  manifests_dir=$1
+  num_instances=$2
+  # TODO re implement multiple instances of MifosX deployment in different 
+  #      namespaces. In the move away from the helm charts to the simple yamls 
+  #      I (Tom D) temporarily hardcoded this just so we could get something working
+  #      NOTE: MifosX i.e. web-app + fineract could easily be deoloyed from a 
+  #            kubernetes operator and thus multiple deployments would be a simple
+  #            part of that process. 
+  echo "Deploying MifosX i.e. web-app and Fineract via application manifests"
+  createNamespace "$FIN_NAMESPACE-$2"
+  #echo
+  #cloneRepo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
+  # TD: ideally the application manifests should be maintained in a Mifos repo 
+  #     seperate from mifos-gazelle (mifosx-docker?) , this might also 
+  #     bve the correct location for a potential k8s operator too.
+
+  echo "Deploying files in $manifests_dir"
+  applyKubeManifests "$manifests_dir" "$FIN_NAMESPACE-$2"
+} 
+
 function deployFineract() {
   echo -e "${BLUE}Deploying Fineract${RESET}"
 
-  cloneRepo "$FIN_BRANCH" "$FIN_REPO_LINK" "$APPS_DIR" "$FIN_REPO_DIR"
+  #cloneRepo "$FIN_BRANCH" "$FIN_REPO_LINK" "$APPS_DIR" "$FIN_REPO_DIR"
   configureFineract
 
   num_instances=$1
@@ -431,7 +468,7 @@ function deployFineract() {
     if [ "$debug" = true ]; then
       deployHelmChartFromDir "$APPS_DIR$FIN_REPO_DIR/helm/fineract" "$FIN_NAMESPACE-$i" "$FIN_RELEASE_NAME-$i" "$FIN_VALUES_FILE"
     else 
-      deployHelmChartFromDir "$APPS_DIR$FIN_REPO_DIR/helm/fineract" "$FIN_NAMESPACE-$i" "$FIN_RELEASE_NAME-$i" "$FIN_VALUES_FILE" >> /dev/null 2>&1
+      deployHelmChartFromDir "$APPS_DIR$FIN_REPO_DIR/helm/fineract" "$FIN_NAMESPACE-$i" "$FIN_RELEASE_NAME-$i" "$FIN_VALUES_FILE" 
     fi
 
       echo -e "\n${GREEN}============================"
@@ -467,24 +504,31 @@ function deployApps {
   fin_num_instances="$1"
   appsToDeploy="$2"
 
+  echo "TDDEBUG> fin instances: $fin_num_instances"
+  echo "TDDEBUG > appstodeploy: $fin_num_instances"
+  echo "in deployApps RUN_DIR is $RUN_DIR"
+
   if [ -z "$appsToDeploy" ]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract "$fin_num_instances"
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "all" ]]; then
     echo -e "${BLUE}Deploying all apps ...${RESET}"
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract "$fin_num_instances"
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "moja" ]];then
     deployInfrastructure
     deployMojaloop
   elif [[ "$appsToDeploy" == "fin" ]]; then 
     deployInfrastructure
-    deployFineract "$fin_num_instances"
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   elif [[ "$appsToDeploy" == "ph" ]]; then
     deployPH
   else 
@@ -493,7 +537,8 @@ function deployApps {
     deployInfrastructure
     deployMojaloop
     deployPH
-    deployFineract "$fin_num_instances"
+    DeployMifosXfromYaml "$FIN_MANIFESTS_DIR"  "$fin_num_instances"
+    #deployFineract "$fin_num_instances"
   fi
   addKubeConfig >> /dev/null 2>&1
   printEndMessage

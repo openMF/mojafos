@@ -5,9 +5,13 @@
 ########################################################################
 INFRA_DIR="src/mojafos/deployer/helm/infra"
 BASE_DIR=$(pwd)
+echo "BASE_DIR is $BASE_DIR" 
+echo "in config.sh RUN_DIR is $RUN_DIR"
+
 APPS_DIR="$BASE_DIR/src/mojafos/deployer/apps/"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="mojafos-infra"
+NGINX_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/nginx_values.yaml"
 #mojaloop
 MOJALOOPBRANCH="beta1"
 MOJALOOPREPO_DIR="mojaloop"
@@ -16,20 +20,14 @@ MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
 MOJALOOP_LAYER_DIRS=("$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/crosscut" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/ttk" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/apps" "$BASE_DIR/src/mojafos/deployer/apps/mojaloop/packages/installer/manifests/reporting")
 MOJALOOP_VALUES_FILE="$BASE_DIR/src/mojafos/configurationManager/mojaloop_values.json"
 #paymenthubee
-PHBRANCH="v1.2.0-release"
+PHBRANCH="master"
 PHREPO_DIR="ph"
 PH_NAMESPACE="paymenthub"
-PH_RELEASE_NAME="moja-ph"
-PH_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/ph_values.yaml"
+PH_RELEASE_NAME="phee"
+PH_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/td_ph_values.yaml"
 PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
-PH_HELM_REPO_LINK="https://fynarfin.io/images/ph-ee-g2psandbox-1.5.0/"
-PH_G2P_CHART_VERSION="1.5.0"
-PH_CHART_REPO_NAME="g2p-sandbox-1-5"
-PH_EE_ENV_LABS_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
-PH_EE_ENV_LABS_REPO_BRANCH="master"
-PH_EE_ENV_LABS_REPO_DIR="ph_env_labs"
 PH_EE_ENV_TEMPLATE_REPO_LINK="https://github.com/openMF/ph-ee-env-template.git"
-PH_EE_ENV_TEMPLATE_REPO_BRANCH="master"
+PH_EE_ENV_TEMPLATE_REPO_BRANCH="c4gt-gazelle-dev"
 PH_EE_ENV_TEMPLATE_REPO_DIR="ph_template"
 # Define Kubernetes service and MySQL connection details
 MYSQL_SERVICE_NAME="mysql"  # Replace with your MySQL service name
@@ -44,12 +42,13 @@ SQL_FILE="$BASE_DIR/src/mojafos/deployer/setup.sql"
 
 #fineract
 FIN_NAMESPACE="fineract"
-FIN_BRANCH="master"
-FIN_REPO_LINK="https://github.com/fynarfin/fineract-env.git"
-FIN_REPO_DIR="fineract"
-FIN_NAMESPACE="fineract"
-FIN_RELEASE_NAME="fineract"
-FIN_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/fin_values.yaml"
+FIN_MANIFESTS_DIR=$APPS_DIR/mifosx/manifests
+# FIN_BRANCH="master"
+# FIN_REPO_LINK="https://github.com/fynarfin/fineract-env.git"
+# FIN_REPO_DIR="fineract"
+# FIN_NAMESPACE="fineract"
+# FIN_RELEASE_NAME="fineract"
+# FIN_VALUES_FILE="$BASE_DIR/src/mojafos/deployer/fin_values.yaml"
 
 
 ########################################################################

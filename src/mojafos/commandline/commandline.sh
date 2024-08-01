@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
-source ./src/mojafos/configurationManager/config.sh
-source ./src/mojafos/environmentSetup/environmentSetup.sh
-source ./src/mojafos/deployer/deployer.sh
+source "$RUN_DIR/src/mojafos/configurationManager/config.sh"
+source "$RUN_DIR/src/mojafos/environmentSetup/environmentSetup.sh"
+source "$RUN_DIR/src/mojafos/deployer/deployer.sh"
+
+echo "in commandline: RUN_DIR is $RUN_DIR"
+
 
 function welcome {
   echo -e "${BLUE}"
@@ -26,7 +29,7 @@ Example 2 : sudo $0  -m cleanup -u \$USER -d true # delete mojafos with debug mo
 Example 3 : sudo $0  -m deploy -u \$USER -d false # install mojafos without debug mode and user \$USER
 
 Options:
--m mode ............... install|delete (-m is required)
+-m mode ............... deploy|cleanapps|cleanall (-m is required)
 -u user................ user that the process will use for execution
 -d debug............... debug mode. if set debug is true, if not set debug is false
 -h|H .................. display this message
@@ -36,48 +39,39 @@ Options:
 }
 
 function getoptions {
-  local mode_opt
+    local mode_opt
+    while getopts "m:k:da:f:e:v:u:hH" OPTION ; do
+        case "${OPTION}" in
+            m) mode_opt="${OPTARG}" ;;
+            k) k8s_distro="${OPTARG}" ;;
+            d) debug="${OPTARG}" ;;
+            a) apps="${OPTARG}" ;;
+            f) fineract_instances="${OPTARG}" ;;
+            e) environment="${OPTARG}" ;;
+            v) k8s_user_version="${OPTARG}" ;;
+            u) k8s_user="${OPTARG}" ;;
+            h|H) showUsage
+                 exit 0 ;;
+            *) echo "unknown option"
+               showUsage
+               exit 1 ;;
 
-  while getopts "m:k:d:a:f:e:u:hH" OPTION ; do
-    case "${OPTION}" in
-            m)	    mode_opt="${OPTARG}"
-            ;;
-            k)      k8s_distro="${OPTARG}"
-            ;;
-            d)      debug="${OPTARG}"
-            ;;
-            a)      apps="${OPTARG}"
-            ;;
-            f)      fineract_instansces="${OPTARG}"
-            ;;
-            e)      environment="${OPTARG}"
-            ;;
-            v)	    k8s_user_version="${OPTARG}"
-            ;;
-            u)      k8s_user="${OPTARG}"
-            ;;
-            h|H)	showUsage
-                    exit 0
-            ;;
-            *)	echo  "unknown option"
-                    showUsage
-                    exit 1
-            ;;
         esac
     done
 
-  if [ -z "$mode_opt" ]; then
-    echo "Error: Mode argument is required."
-    showUsage
-    exit 1
-  fi
+    if [ -z "$mode_opt" ]; then
+      echo "Error: Mode argument is required."
+      showUsage
+      exit 1
+    fi
 
-  if [ -z "$debug" ]; then
-    debug=false
-  fi
+    if [ -z "$debug" ]; then
+      debug=false
+    fi
 
-  mode="$mode_opt"
+    mode="$mode_opt"
 }
+
 
 # this function is called when Ctrl-C is sent
 function cleanUp ()
@@ -110,17 +104,24 @@ trap "trapCtrlc" 2
 function main {
   welcome 
   getoptions "$@"
+  echo "APPS=$apps"
+  echo "fineract_instances=$fineract_instances"
+
   if [ $mode == "deploy" ]; then
     echo -e "${YELLOW}"
-    echo -e "===================================================================================="
-    echo -e "The deployment made by this script is meant for demo purposes and not for production"
-    echo -e "===================================================================================="
+    echo -e "======================================================================================================"
+    echo -e "The deployment made by this script is currently suitable only for demo purposes and not for production"
+    echo -e "======================================================================================================"
     echo -e "${RESET}"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
-    deployApps "$fineract_instansces" "$apps"
-  elif [ $mode == "cleanup" ]; then
+    envSetupMain "$mode" "k3s" "1.30" "$environment"
+    echo "deployApps $fineract_instances $apps"
+    deployApps "$fineract_instances" "$apps"
+  elif [ $mode == "cleanapps" ]; then  
+    logWithVerboseCheck $debug info "Cleaning up Mojafos applications only"
+    envSetupMain "$mode" "k3s" "1.30" "$environment"
+  elif [ $mode == "cleanall" ]; then
     logWithVerboseCheck $debug info "Cleaning up all traces of Mojafos"
-    envSetupMain "$mode" "k3s" "1.26" "$environment"
+    envSetupMain "$mode" "k3s" "1.30" "$environment"
   else
     showUsage
   fi
